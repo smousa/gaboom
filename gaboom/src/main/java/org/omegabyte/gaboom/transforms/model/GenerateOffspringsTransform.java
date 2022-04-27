@@ -48,7 +48,7 @@ public class GenerateOffspringsTransform<GenomeT extends Serializable> extends P
 
             c.output(nBaseItemIndexTupleTag, KV.of(key, new NBaseItem(rng.nextLong(), selectIndividuals.getN())));
             for (int i = 0; i < (selectIndividuals.getN()+1)/2; i++) {
-                c.output(KV.of(key, new SelectIndividuals<>(selectIndividuals, 2)));
+                c.output(KV.of(key, new SelectIndividuals<>(rng.nextLong(), selectIndividuals.getIndividuals(), 2)));
             }
         }
     }

@@ -110,18 +110,11 @@ public class ModelRing<GenomeT extends Serializable> extends ModelTransform<Geno
         // Get the best individual and restore its index
         TupleTag<Individuals<GenomeT>> rankedTT = new TupleTag<>();
         TupleTag<String> keyTT = new TupleTag<>();
-        PCollection<KV<String, Individual<GenomeT>>> selectedIndividual = KeyedPCollectionTuple
+        return KeyedPCollectionTuple
                 .of(rankedTT, ranked)
                 .and(keyTT, result.get(keyAtIdTT))
                 .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new GetBestIndividualFn<>(rankedTT, keyTT)));
-
-        // Return new population
-        TupleTag<Individual<GenomeT>> selectedIndividualTT = new TupleTag<>();
-        TupleTag<BaseItem> baseItemTT = new TupleTag<>();
-        return KeyedPCollectionTuple.of(selectedIndividualTT, selectedIndividual)
-                .and(baseItemTT, result.get(baseItemAtKeyTT))
-                .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new IndividualsFromIndividualFn<>(selectedIndividualTT, baseItemTT)));
+                .apply(ParDo.of(new GetBestIndividualFn<>(rankedTT, keyTT)))
+                .apply(new IndividualsFromIndividualTransform<>(result.get(baseItemAtKeyTT)));
     }
 }

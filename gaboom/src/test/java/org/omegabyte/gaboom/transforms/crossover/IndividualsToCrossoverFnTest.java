@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.omegabyte.gaboom.CrossoverIndividuals;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
-import org.omegabyte.gaboom.transforms.crossover.IndividualsToCrossoverFn;
 
 import java.util.ArrayList;
 import java.util.List;

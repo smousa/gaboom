@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.omegabyte.gaboom.transforms.halloffame.HallOfFameFnTest.makeIndividual;
 
 public class HallOfFameTransformTest {

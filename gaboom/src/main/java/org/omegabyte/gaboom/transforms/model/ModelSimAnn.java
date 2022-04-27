@@ -97,21 +97,15 @@ public class ModelSimAnn<GenomeT extends Serializable> extends ModelTransform<Ge
         TupleTag<Individuals<GenomeT>> originalIndividualTT = new TupleTag<>();
         TupleTag<Individuals<GenomeT>> mutantTT = new TupleTag<>();
         TupleTag<String> keyTT = new TupleTag<>();
-        PCollection<KV<String, Individual<GenomeT>>> selectedIndividual = KeyedPCollectionTuple
+        return KeyedPCollectionTuple
                 .of(originalIndividualTT, result.get(originalIndividualAtIdTT))
                 .and(mutantTT, mutant)
                 .and(keyTT, result.get(keyAtIdTT))
                 .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new ModelSimAnnFn<>(originalIndividualTT, mutantTT, keyTT, t)));
+                .apply(ParDo.of(new ModelSimAnnFn<>(originalIndividualTT, mutantTT, keyTT, t)))
 
-        // Get the new population and do it again
-        TupleTag<Individual<GenomeT>> selectedIndividualTT = new TupleTag<>();
-        TupleTag<BaseItem> baseItemTT = new TupleTag<>();
-
-        return KeyedPCollectionTuple.of(selectedIndividualTT, selectedIndividual)
-                .and(baseItemTT, result.get(baseItemAtKeyTT))
-                .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new IndividualsFromIndividualFn<>(selectedIndividualTT, baseItemTT)))
-                .apply(new ModelSimAnn<>(mutateTransform, evaluateTransform, t * alpha, tmin, alpha));
+                // Get the new population and do it again
+                .apply(new IndividualsFromIndividualTransform<>(result.get(baseItemAtKeyTT)))
+                .apply(new ModelSimAnn<>(mutateTransform, evaluateTransform, t*alpha, tmin, alpha));
     }
 }

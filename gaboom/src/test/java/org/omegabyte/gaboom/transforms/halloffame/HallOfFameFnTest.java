@@ -5,8 +5,7 @@ import org.omegabyte.gaboom.Individual;
 
 import java.util.*;
 
-import static org.apache.beam.sdk.repackaged.com.google.common.primitives.Doubles.asList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class HallOfFameFnTest {
 
