@@ -1,5 +1,8 @@
 package org.omegabyte.gaboom.transforms.model;
 
+import org.apache.beam.sdk.coders.KvCoder;
+import org.apache.beam.sdk.coders.SerializableCoder;
+import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.join.CoGbkResult;
@@ -100,7 +103,7 @@ public class ModelRing<GenomeT extends Serializable> extends ModelTransform<Geno
                 .apply(mutateTransform);
 
         // Append the offsprings back into the original parent and evaluate
-        PCollection<KV<String, Individuals<GenomeT>>> ranked = PCollectionList.of(result.get(originalIndividualAtIdTT)).and(offsprings)
+        PCollection<KV<String, Individuals<GenomeT>>> ranked = PCollectionList.of(result.get(originalIndividualAtIdTT).setCoder(input.getCoder())).and(offsprings)
                 .apply(new AppendToPopulationTransform<>())
                 .apply(evaluateTransform);
 
@@ -109,9 +112,10 @@ public class ModelRing<GenomeT extends Serializable> extends ModelTransform<Geno
         TupleTag<String> keyTT = new TupleTag<>();
         return KeyedPCollectionTuple
                 .of(rankedTT, ranked)
-                .and(keyTT, result.get(keyAtIdTT))
+                .and(keyTT, result.get(keyAtIdTT).setCoder(KvCoder.of(StringUtf8Coder.of(), StringUtf8Coder.of())))
                 .apply(CoGroupByKey.create())
                 .apply(ParDo.of(new GetBestIndividualFn<>(rankedTT, keyTT)))
-                .apply(IndividualsFromIndividualTransform.of(result.get(baseItemAtKeyTT)));
+                .apply(IndividualsFromIndividualTransform.of(result.get(baseItemAtKeyTT)
+                        .setCoder(KvCoder.of(StringUtf8Coder.of(), SerializableCoder.of(BaseItem.class)))));
     }
 }
