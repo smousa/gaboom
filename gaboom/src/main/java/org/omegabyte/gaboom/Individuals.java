@@ -2,7 +2,6 @@ package org.omegabyte.gaboom;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class Individuals<GenomeT extends Serializable> extends BaseItem  implements Serializable {

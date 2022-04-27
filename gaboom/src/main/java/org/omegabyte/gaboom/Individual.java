@@ -1,6 +1,5 @@
 package org.omegabyte.gaboom;
 
-import org.apache.commons.text.RandomStringGenerator;
 import org.omegabyte.gaboom.utils.IdGenerator;
 
 import java.io.Serializable;
