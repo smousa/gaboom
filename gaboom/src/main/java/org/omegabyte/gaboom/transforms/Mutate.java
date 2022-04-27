@@ -36,7 +36,7 @@ public class Mutate {
             Individuals<GenomeT> outputIndividuals = new Individuals<>(rng.nextLong());
             individuals.getIndividuals().forEach(ind -> {
                 if (mutRate > 0 && rng.nextDouble() <= mutRate) {
-                    outputIndividuals.getIndividuals().add(new Individual<GenomeT>(ind.getId(), mutate(c, rng, ind.getGenome())));
+                    outputIndividuals.getIndividuals().add(new Individual<>(ind.getId(), mutate(c, rng, ind.getGenome())));
                 } else {
                     outputIndividuals.getIndividuals().add(ind);
                 }
@@ -54,11 +54,11 @@ public class Mutate {
             this.sideInputs = sideInputs;
         }
 
-        public MutateTransform withSideInputs(PCollectionView... sideInputs) {
+        public MutateTransform<GenomeT> withSideInputs(PCollectionView... sideInputs) {
             return this.withSideInputs((Iterable) Arrays.asList(sideInputs));
         }
 
-        public MutateTransform withSideInputs(Iterable<? extends PCollectionView<?>> sideInputs) {
+        public MutateTransform<GenomeT> withSideInputs(Iterable<? extends PCollectionView<?>> sideInputs) {
             List list = ImmutableList.builder().addAll(this.sideInputs).addAll(sideInputs).build();
             return new MutateTransform<>(fn, list);
         }
