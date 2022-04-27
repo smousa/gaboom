@@ -4,15 +4,12 @@ import org.apache.beam.sdk.transforms.DoFnTester;
 import org.apache.beam.sdk.values.KV;
 import org.junit.Assert;
 import org.junit.Test;
-import org.omegabyte.gaboom.CrossoverIndividuals;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.SelectIndividuals;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 public class IndividualsToSelectorFnTest {
 

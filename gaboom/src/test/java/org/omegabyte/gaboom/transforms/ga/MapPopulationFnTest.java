@@ -3,13 +3,9 @@ package org.omegabyte.gaboom.transforms.ga;
 import org.apache.beam.sdk.transforms.DoFnTester;
 import org.apache.beam.sdk.values.KV;
 import org.junit.Test;
-import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Population;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class MapPopulationFnTest {
 

@@ -1,7 +1,5 @@
 package org.omegabyte.gaboom;
 
-import com.google.common.base.Objects;
-
 import java.io.Serializable;
 
 public class CrossoverIndividuals<GenomeT extends Serializable> extends BaseItem implements Serializable {

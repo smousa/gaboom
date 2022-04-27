@@ -10,8 +10,6 @@ import org.omegabyte.gaboom.Individuals;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
-
 public class GetIndividualListFnTest {
 
     @Test
