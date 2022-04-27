@@ -7,7 +7,6 @@ import org.apache.beam.sdk.transforms.join.CoGroupByKey;
 import org.apache.beam.sdk.transforms.join.KeyedPCollectionTuple;
 import org.apache.beam.sdk.values.*;
 import org.omegabyte.gaboom.BaseItem;
-import org.omegabyte.gaboom.CrossoverIndividuals;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.transforms.Crossover;
@@ -33,7 +32,7 @@ public class ModelRing<GenomeT extends Serializable> extends ModelTransform<Geno
         this.evaluateTransform = Evaluate.as(fitnessTransform);
     }
 
-    static class ModelRingFn<GenomeT extends Serializable> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, CrossoverIndividuals<GenomeT>>> {
+    static class ModelRingFn<GenomeT extends Serializable> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, Individuals<GenomeT>>> {
         private final TupleTag<KV<String, String>> indexTupleTag;
         private final TupleTag<KV<String, BaseItem>> baseItemTupleTag;
         private final TupleTag<KV<String, Individuals<GenomeT>>> parentTupleTag;
@@ -49,9 +48,10 @@ public class ModelRing<GenomeT extends Serializable> extends ModelTransform<Geno
             String key = c.element().getKey();
             Individuals<GenomeT> parents = c.element().getValue();
             Random rng = parents.getRandomGenerator();
+            int parentSize = parents.getIndividuals().size();
 
             c.output(baseItemTupleTag, KV.of(key, new BaseItem(rng.nextLong())));
-            for (int i = 0; i < parents.getIndividuals().size(); i++) {
+            for (int i = 0; i < parentSize; i++) {
                 Individual<GenomeT> parent = parents.getIndividuals().get(i);
                 c.output(indexTupleTag, KV.of(parent.getId(), key));
 
@@ -59,8 +59,9 @@ public class ModelRing<GenomeT extends Serializable> extends ModelTransform<Geno
                 plist.add(parent);
                 c.output(parentTupleTag, KV.of(parent.getId(), new Individuals<>(parents.getSeed(), plist)));
 
-                CrossoverIndividuals<GenomeT> crossoverIndividuals = new CrossoverIndividuals<>(rng.nextLong(), parent,
-                        parents.getIndividuals().get((i+1)%parents.getIndividuals().size()));
+                Individuals<GenomeT> crossoverIndividuals = new Individuals<>(rng.nextLong());
+                crossoverIndividuals.getIndividuals().add(parent);
+                crossoverIndividuals.getIndividuals().add(parents.getIndividuals().get((i+1)%parentSize));
                 c.output(KV.of(parent.getId(), crossoverIndividuals));
             }
         }
@@ -89,7 +90,7 @@ public class ModelRing<GenomeT extends Serializable> extends ModelTransform<Geno
         TupleTag<KV<String, String>> keyAtIdTT = new TupleTag<>();
         TupleTag<KV<String, BaseItem>> baseItemAtKeyTT = new TupleTag<>();
         TupleTag<KV<String, Individuals<GenomeT>>> originalIndividualAtIdTT = new TupleTag<>();
-        TupleTag<KV<String, CrossoverIndividuals<GenomeT>>> crossoverIndividualsAtIdTT = new TupleTag<>();
+        TupleTag<KV<String, Individuals<GenomeT>>> crossoverIndividualsAtIdTT = new TupleTag<>();
         PCollectionTuple result = input.apply(ParDo.of(new ModelRingFn<>(keyAtIdTT, baseItemAtKeyTT, originalIndividualAtIdTT))
                 .withOutputTags(crossoverIndividualsAtIdTT,
                         TupleTagList.of(keyAtIdTT)

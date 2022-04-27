@@ -94,7 +94,6 @@ public class GenerateOffspringsTransform<GenomeT extends Serializable> extends P
         // Create offspring
         PCollection<KV<String, Individuals<GenomeT>>> offsprings = result.get(selectPairsAtKeyTT)
                 .apply(selectTransform)
-                .apply(ParDo.of(new IndividualsToCrossoverFn<>()))
                 .apply(crossoverTransform)
                 .apply(mutateTransform);
 

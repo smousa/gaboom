@@ -1,9 +1,6 @@
 package org.omegabyte.gaboom.transforms;
 
-import org.apache.beam.sdk.coders.BigEndianIntegerCoder;
-import org.apache.beam.sdk.coders.KvCoder;
-import org.apache.beam.sdk.coders.ListCoder;
-import org.apache.beam.sdk.coders.StringUtf8Coder;
+import org.apache.beam.sdk.coders.*;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.ParDo;
@@ -11,6 +8,8 @@ import org.apache.beam.sdk.util.SerializableUtils;
 import org.apache.beam.sdk.values.*;
 import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.SelectIndividuals;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.List;

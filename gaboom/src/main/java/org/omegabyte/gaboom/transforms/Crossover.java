@@ -10,6 +10,7 @@ import org.apache.beam.sdk.values.PCollectionView;
 import org.omegabyte.gaboom.CrossoverIndividuals;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
+import org.omegabyte.gaboom.transforms.model.IndividualsToCrossoverFn;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public class Crossover {
         }
     }
 
-    public static class CrossoverTransform<GenomeT extends Serializable> extends PTransform<PCollection<KV<String, CrossoverIndividuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
+    public static class CrossoverTransform<GenomeT extends Serializable> extends PTransform<PCollection<KV<String, Individuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
         private final CrossoverFn<GenomeT> fn;
         private final List<PCollectionView<?>> sideInputs;
 
@@ -72,8 +73,10 @@ public class Crossover {
         }
 
         @Override
-        public PCollection<KV<String, Individuals<GenomeT>>> expand(PCollection<KV<String, CrossoverIndividuals<GenomeT>>> input) {
-            return input.apply(ParDo.of(fn).withSideInputs(sideInputs));
+        public PCollection<KV<String, Individuals<GenomeT>>> expand(PCollection<KV<String, Individuals<GenomeT>>> input) {
+            return input
+                    .apply(ParDo.of(new IndividualsToCrossoverFn<>()))
+                    .apply(ParDo.of(fn).withSideInputs(sideInputs));
         }
     }
 

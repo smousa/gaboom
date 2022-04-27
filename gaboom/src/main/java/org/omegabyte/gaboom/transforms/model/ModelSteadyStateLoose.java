@@ -36,7 +36,6 @@ public class ModelSteadyStateLoose<GenomeT extends Serializable> extends ModelTr
 
         // Produce offspring
         PCollection<KV<String, Individuals<GenomeT>>> offspring = result.get(selectedIndividualsAtKeyTT)
-                .apply(ParDo.of(new IndividualsToCrossoverFn<>()))
                 .apply(crossoverTransform)
                 .apply(mutateTransform);
 

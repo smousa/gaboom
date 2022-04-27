@@ -38,7 +38,6 @@ public class ModelSteadyStateStrict<GenomeT extends SerialArray> extends ModelTr
 
         // Produce offspring
         PCollection<KV<String, Individuals<GenomeT>>> offspring = result.get(selectedIndividualsAtKeyTT)
-                .apply(ParDo.of(new IndividualsToCrossoverFn<>()))
                 .apply(crossoverTransform)
                 .apply(mutateTransform);
 
