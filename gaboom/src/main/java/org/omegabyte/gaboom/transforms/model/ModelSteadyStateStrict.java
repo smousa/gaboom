@@ -35,7 +35,6 @@ public class ModelSteadyStateStrict<GenomeT extends SerialArray> extends ModelTr
         PCollectionTuple result = input.apply(ParDo.of(new IndividualsToSelectorFn<>(2)))
                 .apply(Select.as(selectFn, selectedIndexesAtKeyTT, selectedIndividualsAtKeyTT));
 
-
         // Produce offspring
         PCollection<KV<String, Individuals<GenomeT>>> offspring = result.get(selectedIndividualsAtKeyTT)
                 .apply(crossoverTransform)
@@ -49,13 +48,6 @@ public class ModelSteadyStateStrict<GenomeT extends SerialArray> extends ModelTr
                 .apply(Select.as(new SelectEliteFn<>()));
 
         // Replace selected individuals with new selection
-        TupleTag<Individuals<GenomeT>> originalPopulationTT = new TupleTag<>();
-        TupleTag<Individuals<GenomeT>> selectedIndividualsTT = new TupleTag<>();
-        TupleTag<List<Integer>> selectedIndexesTT = new TupleTag<>();
-        return KeyedPCollectionTuple.of(originalPopulationTT, input)
-                .and(selectedIndividualsTT, selectedIndividuals)
-                .and(selectedIndexesTT, result.get(selectedIndexesAtKeyTT))
-                .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new ReplacePopulationAtIndexesFn<>(originalPopulationTT, selectedIndividualsTT, selectedIndexesTT)));
+        return input.apply(ReplacePopulationTransform.of(selectedIndividuals, result.get(selectedIndexesAtKeyTT)));
     }
 }

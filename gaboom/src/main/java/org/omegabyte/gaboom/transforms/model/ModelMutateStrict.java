@@ -67,13 +67,6 @@ public class ModelMutateStrict<GenomeT extends Serializable> extends ModelTransf
                 .apply(ParDo.of(new DedupeIndividualsFn<>()));
 
         // Replace selected individuals with mutants
-        TupleTag<Individuals<GenomeT>> originalPopulationTT = new TupleTag<>();
-        TupleTag<Individuals<GenomeT>> bestSelectionTT = new TupleTag<>();
-        TupleTag<List<Integer>> selectedIndexesTT = new TupleTag<>();
-        return KeyedPCollectionTuple.of(originalPopulationTT, input)
-                .and(bestSelectionTT, bestSelection)
-                .and(selectedIndexesTT, result.get(selectedIndexesAtKeyTT))
-                .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new ReplacePopulationAtIndexesFn<>(originalPopulationTT, bestSelectionTT, selectedIndexesTT)));
+        return input.apply(ReplacePopulationTransform.of(bestSelection, result.get(selectedIndexesAtKeyTT)));
     }
 }

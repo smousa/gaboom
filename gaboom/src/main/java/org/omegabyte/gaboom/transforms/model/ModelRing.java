@@ -115,6 +115,6 @@ public class ModelRing<GenomeT extends Serializable> extends ModelTransform<Geno
                 .and(keyTT, result.get(keyAtIdTT))
                 .apply(CoGroupByKey.create())
                 .apply(ParDo.of(new GetBestIndividualFn<>(rankedTT, keyTT)))
-                .apply(new IndividualsFromIndividualTransform<>(result.get(baseItemAtKeyTT)));
+                .apply(IndividualsFromIndividualTransform.of(result.get(baseItemAtKeyTT)));
     }
 }

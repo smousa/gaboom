@@ -21,8 +21,12 @@ import java.util.List;
 public class IndividualsFromIndividualTransform<GenomeT extends Serializable> extends PTransform<PCollection<KV<String, Individual<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
     private final PCollection<KV<String, BaseItem>> baseItem;
 
-    public IndividualsFromIndividualTransform(PCollection<KV<String, BaseItem>> baseItem) {
+    IndividualsFromIndividualTransform(PCollection<KV<String, BaseItem>> baseItem) {
         this.baseItem = baseItem;
+    }
+
+    public static <GenomeT extends Serializable> IndividualsFromIndividualTransform<GenomeT> of(PCollection<KV<String, BaseItem>> baseItem) {
+        return new IndividualsFromIndividualTransform<>(baseItem);
     }
 
     static class IndividualsFromIndividualFn<GenomeT extends Serializable> extends DoFn<KV<String, CoGbkResult>, KV<String, Individuals<GenomeT>>> {

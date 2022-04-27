@@ -20,7 +20,7 @@ public class IndividualsFromIndividualTransformTest {
 
     final static Random random = new Random();
     public static KV<String, Individual<Integer>> makeIndividual(String key) {
-        return KV.of(key, new Individual<Integer>(random, random.nextInt()));
+        return KV.of(key, new Individual<>(random, random.nextInt()));
     }
 
     @Rule
@@ -37,7 +37,7 @@ public class IndividualsFromIndividualTransformTest {
         PCollection<KV<String, BaseItem>> baseItemPCollection = pipeline.apply("BaseItem", Create.of(KV.of("test", new BaseItem(100))));
         PCollection<KV<String, Individuals<Integer>>> output = pipeline
                 .apply(Create.of(individualList))
-                .apply(new IndividualsFromIndividualTransform<>(baseItemPCollection));
+                .apply(IndividualsFromIndividualTransform.of(baseItemPCollection));
         PAssert.that(output).satisfies((SerializableFunction<Iterable<KV<String, Individuals<Integer>>>, Void>) kvs -> {
             KV<String, Individuals<Integer>> result = kvs.iterator().next();
             assertEquals("test", result.getKey());

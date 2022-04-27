@@ -40,13 +40,6 @@ public class ModelSteadyStateLoose<GenomeT extends Serializable> extends ModelTr
                 .apply(mutateTransform);
 
         // Replace selected individuals with offspring
-        TupleTag<Individuals<GenomeT>> originalPopulationTT = new TupleTag<>();
-        TupleTag<Individuals<GenomeT>> offspringTT = new TupleTag<>();
-        TupleTag<List<Integer>> selectedIndexesTT = new TupleTag<>();
-        return KeyedPCollectionTuple.of(originalPopulationTT, input)
-                .and(offspringTT, offspring)
-                .and(selectedIndexesTT, result.get(selectedIndexesAtKeyTT))
-                .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new ReplacePopulationAtIndexesFn<>(originalPopulationTT, offspringTT, selectedIndexesTT)));
+        return input.apply(ReplacePopulationTransform.of(offspring, result.get(selectedIndexesAtKeyTT)));
     }
 }

@@ -38,6 +38,32 @@ public class ModelSimAnn<GenomeT extends Serializable> extends ModelTransform<Ge
         this.alpha = alpha;
     }
 
+    static class SplitIndividualsFn<GenomeT extends Serializable> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, Individuals<GenomeT>>> {
+        private final TupleTag<KV<String, String>> keyAtIdTT;
+        private final TupleTag<KV<String, BaseItem>> baseItemAtKeyTT;
+
+        public SplitIndividualsFn(TupleTag<KV<String, String>> keyAtIdTT, TupleTag<KV<String, BaseItem>> baseItemAtKeyTT) {
+            this.keyAtIdTT = keyAtIdTT;
+            this.baseItemAtKeyTT = baseItemAtKeyTT;
+        }
+
+        @ProcessElement
+        public void processElement(ProcessContext c) {
+            String key = c.element().getKey();
+            Individuals<GenomeT> individuals = c.element().getValue();
+            Random rng = individuals.getRandomGenerator();
+
+            c.output(baseItemAtKeyTT, KV.of(key, new BaseItem(rng.nextLong())));
+            individuals.getIndividuals().forEach(ind -> {
+                c.output(keyAtIdTT, KV.of(ind.getId(), key));
+
+                Individuals<GenomeT> result = new Individuals<>(rng.nextLong());
+                result.getIndividuals().add(ind);
+                c.output(KV.of(ind.getId(), result));
+            });
+        }
+    }
+
     static class ModelSimAnnFn<GenomeT extends Serializable> extends DoFn<KV<String, CoGbkResult>, KV<String, Individual<GenomeT>>> {
         private final TupleTag<Individuals<GenomeT>> firstGenTupleTag;
         private final TupleTag<Individuals<GenomeT>> nextGenTupleTag;
@@ -105,7 +131,7 @@ public class ModelSimAnn<GenomeT extends Serializable> extends ModelTransform<Ge
                 .apply(ParDo.of(new ModelSimAnnFn<>(originalIndividualTT, mutantTT, keyTT, t)))
 
                 // Get the new population and do it again
-                .apply(new IndividualsFromIndividualTransform<>(result.get(baseItemAtKeyTT)))
+                .apply(IndividualsFromIndividualTransform.of(result.get(baseItemAtKeyTT)))
                 .apply(new ModelSimAnn<>(mutateTransform, evaluateTransform, t*alpha, tmin, alpha));
     }
 }

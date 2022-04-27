@@ -37,13 +37,6 @@ public class ModelMutateLoose<GenomeT extends Serializable> extends ModelTransfo
         PCollection<KV<String, Individuals<GenomeT>>> mutants = result.get(selectedIndividualsAtKeyTT).apply(mutateTransform);
 
         // Replace selected individuals with mutants
-        TupleTag<Individuals<GenomeT>> originalPopulationTT = new TupleTag<>();
-        TupleTag<Individuals<GenomeT>> mutantsTT = new TupleTag<>();
-        TupleTag<List<Integer>> selectedIndexesTT = new TupleTag<>();
-        return KeyedPCollectionTuple.of(originalPopulationTT, input)
-                .and(mutantsTT, mutants)
-                .and(selectedIndexesTT, result.get(selectedIndexesAtKeyTT))
-                .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new ReplacePopulationAtIndexesFn<>(originalPopulationTT, mutantsTT, selectedIndexesTT)));
+        return input.apply(ReplacePopulationTransform.of(mutants, result.get(selectedIndexesAtKeyTT)));
     }
 }
