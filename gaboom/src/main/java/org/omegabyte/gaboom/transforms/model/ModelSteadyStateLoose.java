@@ -11,9 +11,6 @@ import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.transforms.Crossover;
 import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Select;
-import org.omegabyte.gaboom.transforms.utils.Individuals2CrossoverIndividualsFn;
-import org.omegabyte.gaboom.transforms.utils.Individuals2SelectIndividualsFn;
-import org.omegabyte.gaboom.transforms.utils.ReplaceIndividualsFn;
 
 import java.util.List;
 
@@ -30,27 +27,26 @@ public class ModelSteadyStateLoose<GenomeT> extends ModelTransform<GenomeT> {
 
     @Override
     public PCollection<KV<String, Individuals<GenomeT>>> expand(PCollection<KV<String, Individuals<GenomeT>>> input) {
-        // Select a pair
-        TupleTag<KV<String, List<Integer>>> selectIndicesTupleTag = new TupleTag<>();
-        TupleTag<KV<String, Individuals<GenomeT>>> selectIndividualsTupleTag = new TupleTag<>();
-        PCollectionTuple result = input
-                .apply(ParDo.of(new Individuals2SelectIndividualsFn<>(2)))
-                .apply(Select.as(selectFn, selectIndicesTupleTag, selectIndividualsTupleTag));
+        // Select individuals to crossover
+        TupleTag<KV<String, List<Integer>>> selectedIndexesAtKeyTT = new TupleTag<>();
+        TupleTag<KV<String, Individuals<GenomeT>>> selectedIndividualsAtKeyTT = new TupleTag<>();
+        PCollectionTuple result = input.apply(ParDo.of(new IndividualsToSelectorFn<>(2)))
+                .apply(Select.as(selectFn, selectedIndexesAtKeyTT, selectedIndividualsAtKeyTT));
 
         // Produce offspring
-        PCollection<KV<String, Individuals<GenomeT>>> offspringPCollection = result.get(selectIndividualsTupleTag)
-                .apply(ParDo.of(new Individuals2CrossoverIndividualsFn<>()))
+        PCollection<KV<String, Individuals<GenomeT>>> offspring = result.get(selectedIndividualsAtKeyTT)
+                .apply(ParDo.of(new IndividualsToCrossoverFn<>()))
                 .apply(crossoverTransform)
                 .apply(mutateTransform);
 
-        // Integrate the new members into the population
-        TupleTag<Individuals<GenomeT>> firstGenTupleTag = new TupleTag<>();
-        TupleTag<List<Integer>> indicesTupleTag = new TupleTag<>();
-        TupleTag<Individuals<GenomeT>> offspringTupleTag = new TupleTag<>();
-        return KeyedPCollectionTuple.of(firstGenTupleTag, input)
-                .and(indicesTupleTag, result.get(selectIndicesTupleTag))
-                .and(offspringTupleTag, offspringPCollection)
+        // Replace selected individuals with offspring
+        TupleTag<Individuals<GenomeT>> originalPopulationTT = new TupleTag<>();
+        TupleTag<Individuals<GenomeT>> offspringTT = new TupleTag<>();
+        TupleTag<List<Integer>> selectedIndexesTT = new TupleTag<>();
+        return KeyedPCollectionTuple.of(originalPopulationTT, input)
+                .and(offspringTT, offspring)
+                .and(selectedIndexesTT, result.get(selectedIndexesAtKeyTT))
                 .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new ReplaceIndividualsFn<>(firstGenTupleTag, offspringTupleTag, indicesTupleTag)));
+                .apply(ParDo.of(new ReplacePopulationAtIndexesFn<>(originalPopulationTT, offspringTT, selectedIndexesTT)));
     }
 }

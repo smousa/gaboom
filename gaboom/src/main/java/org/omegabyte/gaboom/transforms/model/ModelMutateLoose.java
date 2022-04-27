@@ -10,8 +10,6 @@ import org.apache.beam.sdk.values.TupleTag;
 import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Select;
-import org.omegabyte.gaboom.transforms.utils.Individuals2SelectIndividualsFn;
-import org.omegabyte.gaboom.transforms.utils.ReplaceIndividualsFn;
 
 import java.util.List;
 
@@ -28,25 +26,23 @@ public class ModelMutateLoose<GenomeT> extends ModelTransform<GenomeT> {
 
     @Override
     public PCollection<KV<String, Individuals<GenomeT>>> expand(PCollection<KV<String, Individuals<GenomeT>>> input) {
-        //Select individuals
-        TupleTag<KV<String, List<Integer>>> selectIndicesTupleTag = new TupleTag<>();
-        TupleTag<KV<String, Individuals<GenomeT>>> selectIndividualsTupleTag = new TupleTag<>();
-        PCollectionTuple result = input
-                .apply(ParDo.of(new Individuals2SelectIndividualsFn<>(numChosen)))
-                .apply(Select.as(selectFn, selectIndicesTupleTag, selectIndividualsTupleTag));
+        // Select individuals to mutate
+        TupleTag<KV<String, List<Integer>>> selectedIndexesAtKeyTT = new TupleTag<>();
+        TupleTag<KV<String, Individuals<GenomeT>>> selectedIndividualsAtKeyTT = new TupleTag<>();
+        PCollectionTuple result = input.apply(ParDo.of(new IndividualsToSelectorFn<>(numChosen)))
+                .apply(Select.as(selectFn, selectedIndexesAtKeyTT, selectedIndividualsAtKeyTT));
 
         // Apply mutation
-        PCollection<KV<String, Individuals<GenomeT>>> mutants = result.get(selectIndividualsTupleTag)
-                .apply(mutateTransform);
+        PCollection<KV<String, Individuals<GenomeT>>> mutants = result.get(selectedIndividualsAtKeyTT).apply(mutateTransform);
 
-        // Integrate the new members into the population
-        TupleTag<Individuals<GenomeT>> firstGenTupleTag = new TupleTag<>();
-        TupleTag<List<Integer>> indicesTupleTag = new TupleTag<>();
-        TupleTag<Individuals<GenomeT>> offspringTupleTag = new TupleTag<>();
-        return KeyedPCollectionTuple.of(firstGenTupleTag, input)
-                .and(indicesTupleTag, result.get(selectIndicesTupleTag))
-                .and(offspringTupleTag, mutants)
+        // Replace selected individuals with mutants
+        TupleTag<Individuals<GenomeT>> originalPopulationTT = new TupleTag<>();
+        TupleTag<Individuals<GenomeT>> mutantsTT = new TupleTag<>();
+        TupleTag<List<Integer>> selectedIndexesTT = new TupleTag<>();
+        return KeyedPCollectionTuple.of(originalPopulationTT, input)
+                .and(mutantsTT, mutants)
+                .and(selectedIndexesTT, result.get(selectedIndexesAtKeyTT))
                 .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new ReplaceIndividualsFn<>(firstGenTupleTag, offspringTupleTag, indicesTupleTag)));
+                .apply(ParDo.of(new ReplacePopulationAtIndexesFn<>(originalPopulationTT, mutantsTT, selectedIndexesTT)));
     }
 }

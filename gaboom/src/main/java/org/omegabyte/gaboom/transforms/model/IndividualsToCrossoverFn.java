@@ -1,4 +1,4 @@
-package org.omegabyte.gaboom.transforms.utils;
+package org.omegabyte.gaboom.transforms.model;
 
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.values.KV;
@@ -8,8 +8,8 @@ import org.omegabyte.gaboom.Individuals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Individuals2CrossoverIndividualsFn<GenomeT> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, CrossoverIndividuals<GenomeT>>> {
-    private static final Logger logger = LoggerFactory.getLogger(Individuals2CrossoverIndividualsFn.class);
+public class IndividualsToCrossoverFn<GenomeT> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, CrossoverIndividuals<GenomeT>>> {
+    private static final Logger logger = LoggerFactory.getLogger(IndividualsToCrossoverFn.class);
 
     @ProcessElement
     public void processElement(ProcessContext c) {

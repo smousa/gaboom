@@ -1,12 +1,7 @@
 package org.omegabyte.gaboom;
 
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.text.RandomStringGenerator;
-
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 public class Population<GenomeT> extends Individuals<GenomeT> {
     private final String id;

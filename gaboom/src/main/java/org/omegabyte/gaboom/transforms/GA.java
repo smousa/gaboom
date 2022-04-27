@@ -13,6 +13,8 @@ import org.omegabyte.gaboom.BaseItem;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.Population;
+import org.omegabyte.gaboom.transforms.ga.GetIndividualListFn;
+import org.omegabyte.gaboom.transforms.ga.MapPopulationFn;
 import org.omegabyte.gaboom.transforms.halloffame.HallOfFameTransform;
 import org.omegabyte.gaboom.transforms.model.ModelTransform;
 
@@ -43,20 +45,6 @@ public class GA<GenomeT> {
         this.populateTransform = populateTransform.withPopSize(popSize);
         this.modelTransform = modelTransform;
         this.evaluateTransform = Evaluate.as(fitnessTransform);
-    }
-
-    static class SplitPopulationFn<GenomeT> extends DoFn<Population<GenomeT>, KV<String, Population<GenomeT>>> {
-        @ProcessElement
-        public void processElement(ProcessContext c) {
-            c.output(KV.of(c.element().getId(), c.element()));
-        }
-    }
-
-    static class SplitIndividualsFn<GenomeT> extends DoFn<KV<String, Individuals<GenomeT>>, List<Individual<GenomeT>>> {
-        @ProcessElement
-        public void processElement(ProcessContext c) {
-            c.output(c.element().getValue().getIndividuals());
-        }
     }
 
     class InitializeTransform extends PTransform<PBegin, PCollectionTuple> {
@@ -151,12 +139,12 @@ public class GA<GenomeT> {
         public PCollectionTuple expand(PCollectionTuple pCollectionTuple) {
             PCollection<KV<String, Population<GenomeT>>> populationIndex = pCollectionTuple
                     .get(populationsTupleTag)
-                    .apply(ParDo.of(new SplitPopulationFn<>()));
+                    .apply(ParDo.of(new MapPopulationFn<>()));
 
             PCollection<KV<String, Individuals<GenomeT>>> individuals = pCollectionTuple.get(individualsIndexTupleTag)
                     .apply(evaluateTransform);
 
-            PCollection<List<Individual<GenomeT>>> hallOfFame = individuals.apply(ParDo.of(new SplitIndividualsFn<>()))
+            PCollection<List<Individual<GenomeT>>> hallOfFame = individuals.apply(ParDo.of(new GetIndividualListFn<>()))
                     .apply(new HallOfFameTransform<>(pCollectionTuple.get(hallOfFameTupleTag), numBest));
 
             TupleTag<Population<GenomeT>> populationTupleTag = new TupleTag<>();
@@ -170,16 +158,8 @@ public class GA<GenomeT> {
         }
     }
 
-    public int getNumBest() {
-        return numBest;
-    }
-
     public void setNumBest(int numBest) {
         this.numBest = numBest;
-    }
-
-    public long getSeed() {
-        return seed;
     }
 
     public void setSeed(long seed) {

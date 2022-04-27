@@ -7,8 +7,6 @@ import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.transforms.Crossover;
 import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Select;
-import org.omegabyte.gaboom.transforms.utils.GenerateOffspringsTransform;
-import org.omegabyte.gaboom.transforms.utils.Individuals2SelectIndividualsFn;
 
 public class ModelGenerational<GenomeT> extends ModelTransform<GenomeT> {
     private final Select.SelectFn<GenomeT> selectFn;
@@ -23,6 +21,7 @@ public class ModelGenerational<GenomeT> extends ModelTransform<GenomeT> {
 
     @Override
     public PCollection<KV<String, Individuals<GenomeT>>> expand(PCollection<KV<String, Individuals<GenomeT>>> input) {
-        return input.apply(ParDo.of(new Individuals2SelectIndividualsFn<>())).apply(new GenerateOffspringsTransform<>(selectFn, crossoverTransform, mutateTransform));
+        return input.apply(ParDo.of(new IndividualsToSelectorFn<>()))
+                .apply(new GenerateOffspringsTransform<>(selectFn, crossoverTransform, mutateTransform));
     }
 }

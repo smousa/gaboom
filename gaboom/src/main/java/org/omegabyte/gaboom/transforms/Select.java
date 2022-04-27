@@ -13,16 +13,14 @@ import java.util.List;
 public class Select {
 
     public static abstract class SelectFn<GenomeT> extends DoFn<KV<String, SelectIndividuals<GenomeT>>, KV<String, Individuals<GenomeT>>> {
-        protected TupleTag<KV<String, List<Integer>>> selectIndicesTupleTag = new TupleTag<>();
+        protected TupleTag<KV<String, List<Integer>>> selectIndicesTupleTag;
 
         public SelectFn(TupleTag<KV<String, List<Integer>>> selectIndicesTupleTag) {
             this.selectIndicesTupleTag = selectIndicesTupleTag;
         }
 
-        public SelectFn() {}
-
-        public void setSelectIndicesTupleTag(TupleTag<KV<String, List<Integer>>> selectIndicesTupleTag) {
-            this.selectIndicesTupleTag = selectIndicesTupleTag;
+        public SelectFn() {
+            this.selectIndicesTupleTag =  new TupleTag<>();
         }
     }
 
@@ -48,7 +46,7 @@ public class Select {
             this.selectIndicesTupleTag = selectIndicesTupleTag;
             this.selectIndividualsTupleTag = selectIndividualsTupleTag;
             this.fn = SerializableUtils.clone(fn);
-            this.fn.setSelectIndicesTupleTag(selectIndicesTupleTag);
+            this.fn.selectIndicesTupleTag = selectIndicesTupleTag;
         }
 
         @Override

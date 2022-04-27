@@ -1,4 +1,4 @@
-package org.omegabyte.gaboom.transforms.utils;
+package org.omegabyte.gaboom.transforms.model;
 
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
@@ -32,10 +32,10 @@ public class GenerateOffspringsTransform<GenomeT> extends PTransform<PCollection
         this.mutateTransform = mutateTransform;
     }
 
-    static class Convert2SelectIndividualsFn<GenomeT> extends DoFn<KV<String, SelectIndividuals<GenomeT>>, KV<String, SelectIndividuals<GenomeT>>> {
+    static class SelectParentsFn<GenomeT> extends DoFn<KV<String, SelectIndividuals<GenomeT>>, KV<String, SelectIndividuals<GenomeT>>> {
         private final TupleTag<KV<String, NBaseItem>> nBaseItemIndexTupleTag;
 
-        public Convert2SelectIndividualsFn(TupleTag<KV<String, NBaseItem>> nBaseItemIndexTupleTag) {
+        public SelectParentsFn(TupleTag<KV<String, NBaseItem>> nBaseItemIndexTupleTag) {
             this.nBaseItemIndexTupleTag = nBaseItemIndexTupleTag;
         }
 
@@ -52,13 +52,13 @@ public class GenerateOffspringsTransform<GenomeT> extends PTransform<PCollection
         }
     }
 
-    static class Convert2IndividualsFn<GenomeT> extends DoFn<KV<String, CoGbkResult>, KV<String, Individuals<GenomeT>>> {
-        private static final Logger logger = LoggerFactory.getLogger(Convert2IndividualsFn.class);
+    static class GenerateOffspringsFn<GenomeT> extends DoFn<KV<String, CoGbkResult>, KV<String, Individuals<GenomeT>>> {
+        private static final Logger logger = LoggerFactory.getLogger(GenerateOffspringsFn.class);
 
         private final TupleTag<NBaseItem> nBaseItemTupleTag;
         private final TupleTag<Individuals<GenomeT>> individualsTupleTag;
 
-        public Convert2IndividualsFn(TupleTag<NBaseItem> nBaseItemTupleTag, TupleTag<Individuals<GenomeT>> individualsTupleTag) {
+        public GenerateOffspringsFn(TupleTag<NBaseItem> nBaseItemTupleTag, TupleTag<Individuals<GenomeT>> individualsTupleTag) {
             this.nBaseItemTupleTag = nBaseItemTupleTag;
             this.individualsTupleTag = individualsTupleTag;
         }
@@ -84,25 +84,24 @@ public class GenerateOffspringsTransform<GenomeT> extends PTransform<PCollection
 
     @Override
     public PCollection<KV<String, Individuals<GenomeT>>> expand(PCollection<KV<String, SelectIndividuals<GenomeT>>> input) {
-        // Set up selectors
-        TupleTag<KV<String, NBaseItem>> nBaseItemIndexTupleTag = new TupleTag<>();
-        TupleTag<KV<String, SelectIndividuals<GenomeT>>> selectIndividualsIndexTupleTag = new TupleTag<>();
-        PCollectionTuple result = input.apply(ParDo.of(new Convert2SelectIndividualsFn<GenomeT>(nBaseItemIndexTupleTag))
-                .withOutputTags(selectIndividualsIndexTupleTag, TupleTagList.of(nBaseItemIndexTupleTag)));
+        // Select pairs
+        TupleTag<KV<String, NBaseItem>> nBaseItemAtKeyTT = new TupleTag<>();
+        TupleTag<KV<String, SelectIndividuals<GenomeT>>> selectPairsAtKeyTT = new TupleTag<>();
+        PCollectionTuple result = input.apply(ParDo.of(new SelectParentsFn<GenomeT>(nBaseItemAtKeyTT))
+                .withOutputTags(selectPairsAtKeyTT, TupleTagList.of(nBaseItemAtKeyTT)));
 
         // Create offspring
-        PCollection<KV<String, Individuals<GenomeT>>> offspringPCollection = result.get(selectIndividualsIndexTupleTag)
+        PCollection<KV<String, Individuals<GenomeT>>> offsprings = result.get(selectPairsAtKeyTT)
                 .apply(selectTransform)
-                .apply(ParDo.of(new Individuals2CrossoverIndividualsFn<>()))
+                .apply(ParDo.of(new IndividualsToCrossoverFn<>()))
                 .apply(crossoverTransform)
                 .apply(mutateTransform);
 
-        // Merge offspring back into the result
-        TupleTag<NBaseItem> nBaseItemTupleTag = new TupleTag<>();
-        TupleTag<Individuals<GenomeT>> offspringTupleTag = new TupleTag<>();
-        return KeyedPCollectionTuple.of(nBaseItemTupleTag, result.get(nBaseItemIndexTupleTag))
-                .and(offspringTupleTag, offspringPCollection)
+        // Combine offspring
+        TupleTag<NBaseItem> nBaseItemTT = new TupleTag<>();
+        TupleTag<Individuals<GenomeT>> offspringsTT = new TupleTag<>();
+        return KeyedPCollectionTuple.of(nBaseItemTT, result.get(nBaseItemAtKeyTT)).and(offspringsTT, offsprings)
                 .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new Convert2IndividualsFn<>(nBaseItemTupleTag, offspringTupleTag)));
+                .apply(ParDo.of(new GenerateOffspringsFn<>(nBaseItemTT, offspringsTT)));
     }
 }

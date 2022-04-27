@@ -19,13 +19,13 @@ public class SelectEliteFn<GenomeT> extends Select.SelectFn<GenomeT> {
         SelectIndividuals<GenomeT> selectIndividuals = c.element().getValue();
 
         if (selectIndividuals.getN() > selectIndividuals.getIndividuals().size()) {
-            logger.error("Select size {} is greater than individual list {}, key={}", size, selectIndividuals.getIndividuals().size(), key);
+            logger.error("Select size {} is greater than individual list {}, key={}", selectIndividuals.getN(), selectIndividuals.getIndividuals().size(), key);
             return;
         }
 
         List<Integer> indices = new ArrayList<>();
         Individuals<GenomeT> individuals = new Individuals<>(selectIndividuals.getSeed());
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < selectIndividuals.getN(); i++) {
             indices.add(i);
             individuals.getIndividuals().add(selectIndividuals.getIndividuals().get(i));
         }

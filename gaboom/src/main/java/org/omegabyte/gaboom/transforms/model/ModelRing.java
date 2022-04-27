@@ -2,6 +2,7 @@ package org.omegabyte.gaboom.transforms.model;
 
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
+import org.apache.beam.sdk.transforms.join.CoGbkResult;
 import org.apache.beam.sdk.transforms.join.CoGroupByKey;
 import org.apache.beam.sdk.transforms.join.KeyedPCollectionTuple;
 import org.apache.beam.sdk.values.*;
@@ -13,10 +14,6 @@ import org.omegabyte.gaboom.transforms.Crossover;
 import org.omegabyte.gaboom.transforms.Evaluate;
 import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Select;
-import org.omegabyte.gaboom.transforms.utils.CreateIndividualsFn;
-import org.omegabyte.gaboom.transforms.utils.Individuals2SelectIndividualsFn;
-import org.omegabyte.gaboom.transforms.utils.MergeIndividualsFn;
-import org.omegabyte.gaboom.transforms.utils.UniteFamilyFn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,13 +23,13 @@ public class ModelRing<GenomeT> extends ModelTransform<GenomeT> {
     private final Select.SelectNoIndexTransform<GenomeT> selectTransform;
     private final Crossover.CrossoverTransform<GenomeT> crossoverTransform;
     private final Mutate.MutateTransform<GenomeT> mutateTransform;
-    private final Evaluate.FitnessTransform<GenomeT> fitnessTransform;
+    private final Evaluate.EvaluateTransform<GenomeT> evaluateTransform;
 
     public ModelRing(Select.SelectFn<GenomeT> selectFn, Crossover.CrossoverTransform<GenomeT> crossoverTransform, Mutate.MutateTransform<GenomeT> mutateTransform, Evaluate.FitnessTransform<GenomeT> fitnessTransform) {
         this.selectTransform = Select.as(selectFn);
         this.crossoverTransform = crossoverTransform.withCrossRate(1);
         this.mutateTransform = mutateTransform;
-        this.fitnessTransform = fitnessTransform;
+        this.evaluateTransform = Evaluate.as(fitnessTransform);
     }
 
     static class ModelRingFn<GenomeT> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, CrossoverIndividuals<GenomeT>>> {
@@ -68,45 +65,61 @@ public class ModelRing<GenomeT> extends ModelTransform<GenomeT> {
         }
     }
 
+    static class GetBestIndividualFn<GenomeT> extends DoFn<KV<String, CoGbkResult>, KV<String, Individual<GenomeT>>> {
+        private final TupleTag<Individuals<GenomeT>> rankedTT;
+        private final TupleTag<String> keyTT;
+
+        public GetBestIndividualFn(TupleTag<Individuals<GenomeT>> rankedTT, TupleTag<String> keyTT) {
+            this.rankedTT = rankedTT;
+            this.keyTT = keyTT;
+        }
+
+        @ProcessElement
+        public void processElement(ProcessContext c) {
+            CoGbkResult result = c.element().getValue();
+            String key = result.getOnly(keyTT);
+            c.output(KV.of(key, result.getOnly(rankedTT).getIndividuals().get(0)));
+        }
+    }
+
     @Override
     public PCollection<KV<String, Individuals<GenomeT>>> expand(PCollection<KV<String, Individuals<GenomeT>>> input) {
-        // Generate offsprings
-        TupleTag<KV<String, String>> idIndexTupleTag = new TupleTag<>();
-        TupleTag<KV<String, BaseItem>> baseItemIndexTupleTag = new TupleTag<>();
-        TupleTag<KV<String, Individuals<GenomeT>>> individualIndexTupleTag = new TupleTag<>();
-        TupleTag<KV<String, CrossoverIndividuals<GenomeT>>> crossoverIndexTupleTag = new TupleTag<>();
-        PCollectionTuple result = input.apply(ParDo.of(new ModelRingFn<>(idIndexTupleTag, baseItemIndexTupleTag, individualIndexTupleTag))
-                .withOutputTags(crossoverIndexTupleTag, TupleTagList.of(idIndexTupleTag)
-                        .and(individualIndexTupleTag).and(baseItemIndexTupleTag)));
-        PCollection<KV<String, Individuals<GenomeT>>> offspringPCollection = result.get(crossoverIndexTupleTag)
+        // Set up indexes for each selection
+        TupleTag<KV<String, String>> keyAtIdTT = new TupleTag<>();
+        TupleTag<KV<String, BaseItem>> baseItemAtKeyTT = new TupleTag<>();
+        TupleTag<KV<String, Individuals<GenomeT>>> originalIndividualAtIdTT = new TupleTag<>();
+        TupleTag<KV<String, CrossoverIndividuals<GenomeT>>> crossoverIndividualsAtIdTT = new TupleTag<>();
+        PCollectionTuple result = input.apply(ParDo.of(new ModelRingFn<>(keyAtIdTT, baseItemAtKeyTT, originalIndividualAtIdTT))
+                .withOutputTags(crossoverIndividualsAtIdTT,
+                        TupleTagList.of(keyAtIdTT)
+                                .and(baseItemAtKeyTT)
+                                .and(originalIndividualAtIdTT)));
+
+        // Make offsprings
+        PCollection<KV<String, Individuals<GenomeT>>> offsprings = result.get(crossoverIndividualsAtIdTT)
                 .apply(crossoverTransform)
                 .apply(mutateTransform);
 
-        // Merge the parent, evaluate, sort, and pick an individual
-        TupleTag<Individuals<GenomeT>> parentTupleTag = new TupleTag<>();
-        TupleTag<Individuals<GenomeT>> offspringTupleTag = new TupleTag<>();
-        PCollection<KV<String, Individuals<GenomeT>>> chosenPCollection = KeyedPCollectionTuple.of(parentTupleTag, result.get(individualIndexTupleTag))
-                .and(offspringTupleTag, offspringPCollection)
-                .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new UniteFamilyFn<>(parentTupleTag, offspringTupleTag)))
-                .apply(Evaluate.as(fitnessTransform))
-                .apply(ParDo.of(new Individuals2SelectIndividualsFn<>(1)))
-                .apply(selectTransform);
+        // Append the offsprings back into the original parent and evaluate
+        PCollection<KV<String, Individuals<GenomeT>>> ranked = PCollectionList.of(result.get(originalIndividualAtIdTT)).and(offsprings)
+                .apply(new AppendToPopulationTransform<>())
+                .apply(evaluateTransform);
 
-        // Merge the individuals back together
-        TupleTag<String> idTupleTag = new TupleTag<>();
-        TupleTag<Individuals<GenomeT>> chosenTupleTag = new TupleTag<>();
-        PCollection<KV<String, List<Individual<GenomeT>>>> individualsPCollection = KeyedPCollectionTuple.of(idTupleTag, result.get(idIndexTupleTag))
-                .and(chosenTupleTag, chosenPCollection)
+        // Get the best individual and restore its index
+        TupleTag<Individuals<GenomeT>> rankedTT = new TupleTag<>();
+        TupleTag<String> keyTT = new TupleTag<>();
+        PCollection<KV<String, Individual<GenomeT>>> selectedIndividual = KeyedPCollectionTuple
+                .of(rankedTT, ranked)
+                .and(keyTT, result.get(keyAtIdTT))
                 .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new MergeIndividualsFn<>(idTupleTag, chosenTupleTag)));
+                .apply(ParDo.of(new GetBestIndividualFn<>(rankedTT, keyTT)));
 
-        // Wrap it back into individuals
-        TupleTag<BaseItem> baseItemTupleTag = new TupleTag<>();
-        TupleTag<List<Individual<GenomeT>>> individualsTupleTag = new TupleTag<>();
-        return KeyedPCollectionTuple.of(baseItemTupleTag, result.get(baseItemIndexTupleTag))
-                .and(individualsTupleTag, individualsPCollection)
+        // Return new population
+        TupleTag<Individual<GenomeT>> selectedIndividualTT = new TupleTag<>();
+        TupleTag<BaseItem> baseItemTT = new TupleTag<>();
+        return KeyedPCollectionTuple.of(selectedIndividualTT, selectedIndividual)
+                .and(baseItemTT, result.get(baseItemAtKeyTT))
                 .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new CreateIndividualsFn<>(baseItemTupleTag, individualsTupleTag)));
+                .apply(ParDo.of(new IndividualsFromIndividualFn<>(selectedIndividualTT, baseItemTT)));
     }
 }

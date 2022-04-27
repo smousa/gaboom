@@ -1,7 +1,6 @@
 package org.omegabyte.gaboom.transforms.model;
 
 import org.apache.beam.sdk.transforms.DoFn;
-import org.apache.beam.sdk.transforms.GroupByKey;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.join.CoGbkResult;
 import org.apache.beam.sdk.transforms.join.CoGroupByKey;
@@ -12,36 +11,42 @@ import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.transforms.Evaluate;
 import org.omegabyte.gaboom.transforms.Mutate;
-import org.omegabyte.gaboom.transforms.utils.CreateIndividualsFromIndividualFn;
-import org.omegabyte.gaboom.transforms.utils.SplitIndividualsFn;
 
 import java.util.Random;
 
 public class ModelSimAnn<GenomeT> extends ModelTransform<GenomeT> {
     private final Mutate.MutateTransform<GenomeT> mutateTransform;
-    private final Evaluate.FitnessTransform<GenomeT> fitnessTransform;
+    private final Evaluate.EvaluateTransform<GenomeT> evaluateTransform;
     private final double t;
     private final double tmin;
     private final double alpha;
 
     public ModelSimAnn(Mutate.MutateTransform<GenomeT> mutateTransform, Evaluate.FitnessTransform<GenomeT> fitnessTransform, double t, double tmin, double alpha) {
         this.mutateTransform = mutateTransform.withMutRate(1);
-        this.fitnessTransform = fitnessTransform;
+        this.evaluateTransform = Evaluate.as(fitnessTransform);
+        this.t = t;
+        this.tmin = tmin;
+        this.alpha = alpha;
+    }
+
+    public ModelSimAnn(Mutate.MutateTransform<GenomeT> mutateTransform, Evaluate.EvaluateTransform<GenomeT> evaluateTransform, double t, double tmin, double alpha) {
+        this.mutateTransform = mutateTransform.withMutRate(1);
+        this.evaluateTransform = evaluateTransform;
         this.t = t;
         this.tmin = tmin;
         this.alpha = alpha;
     }
 
     static class ModelSimAnnFn<GenomeT> extends DoFn<KV<String, CoGbkResult>, KV<String, Individual<GenomeT>>> {
-        private final TupleTag<String> idTupleTag;
         private final TupleTag<Individuals<GenomeT>> firstGenTupleTag;
         private final TupleTag<Individuals<GenomeT>> nextGenTupleTag;
+        private final TupleTag<String> idTupleTag;
         private final double t;
 
-        public ModelSimAnnFn(TupleTag<String> idTupleTag, TupleTag<Individuals<GenomeT>> firstGenTupleTag, TupleTag<Individuals<GenomeT>> nextGenTupleTag, double t) {
-            this.idTupleTag = idTupleTag;
+        public ModelSimAnnFn(TupleTag<Individuals<GenomeT>> firstGenTupleTag, TupleTag<Individuals<GenomeT>> nextGenTupleTag, TupleTag<String> idTupleTag, double t) {
             this.firstGenTupleTag = firstGenTupleTag;
             this.nextGenTupleTag = nextGenTupleTag;
+            this.idTupleTag = idTupleTag;
             this.t = t;
         }
 
@@ -74,36 +79,38 @@ public class ModelSimAnn<GenomeT> extends ModelTransform<GenomeT> {
             return input;
         }
 
-        // Split by individual
-        TupleTag<KV<String, String>> idIndexTupleTag = new TupleTag<>();
-        TupleTag<KV<String, BaseItem>> baseItemIndexTupleTag = new TupleTag<>();
-        TupleTag<KV<String, Individuals<GenomeT>>> individualsIndexTupleTag = new TupleTag<>();
-        PCollectionTuple result = input.apply(ParDo.of(new SplitIndividualsFn<GenomeT>(idIndexTupleTag, baseItemIndexTupleTag))
-                .withOutputTags(individualsIndexTupleTag, TupleTagList.of(idIndexTupleTag).and(baseItemIndexTupleTag)));
+        // Set up indexes for each individual
+        TupleTag<KV<String, String>> keyAtIdTT = new TupleTag<>();
+        TupleTag<KV<String, BaseItem>> baseItemAtKeyTT = new TupleTag<>();
+        TupleTag<KV<String, Individuals<GenomeT>>> originalIndividualAtIdTT = new TupleTag<>();
+        PCollectionTuple result = input.apply(ParDo.of(new SplitIndividualsFn<GenomeT>(keyAtIdTT, baseItemAtKeyTT))
+                .withOutputTags(originalIndividualAtIdTT,
+                        TupleTagList.of(keyAtIdTT).and(baseItemAtKeyTT)));
 
-        // Mutate and evaluate the individuals
-        PCollection<KV<String, Individuals<GenomeT>>> neighbors = result.get(individualsIndexTupleTag)
+        // Apply mutation and evaluate
+        PCollection<KV<String, Individuals<GenomeT>>> mutant = result.get(originalIndividualAtIdTT)
                 .apply(mutateTransform)
-                .apply(Evaluate.as(fitnessTransform));
+                .apply(evaluateTransform);
 
-        // Perform simulated annealing
-        TupleTag<String> idTupleTag = new TupleTag<>();
-        TupleTag<Individuals<GenomeT>> originalTupleTag = new TupleTag<>();
-        TupleTag<Individuals<GenomeT>> neighborTupleTag = new TupleTag<>();
-        PCollection<KV<String, Iterable<Individual<GenomeT>>>> indiPCollection = KeyedPCollectionTuple.of(originalTupleTag, result.get(individualsIndexTupleTag))
-                .and(neighborTupleTag, neighbors)
-                .and(idTupleTag, result.get(idIndexTupleTag))
+        // Append mutants to originals, perform simulated annealing to select members, and restore index
+        TupleTag<Individuals<GenomeT>> originalIndividualTT = new TupleTag<>();
+        TupleTag<Individuals<GenomeT>> mutantTT = new TupleTag<>();
+        TupleTag<String> keyTT = new TupleTag<>();
+        PCollection<KV<String, Individual<GenomeT>>> selectedIndividual = KeyedPCollectionTuple
+                .of(originalIndividualTT, result.get(originalIndividualAtIdTT))
+                .and(mutantTT, mutant)
+                .and(keyTT, result.get(keyAtIdTT))
                 .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new ModelSimAnnFn<>(idTupleTag, originalTupleTag, neighborTupleTag, t)))
-                .apply(GroupByKey.create());
+                .apply(ParDo.of(new ModelSimAnnFn<>(originalIndividualTT, mutantTT, keyTT, t)));
 
-        // Merge the individuals and do it again
-        TupleTag<BaseItem> baseItemTupleTag = new TupleTag<>();
-        TupleTag<Iterable<Individual<GenomeT>>> indiTupleTag = new TupleTag<>();
-        return KeyedPCollectionTuple.of(baseItemTupleTag, result.get(baseItemIndexTupleTag))
-                .and(indiTupleTag, indiPCollection)
+        // Get the new population and do it again
+        TupleTag<Individual<GenomeT>> selectedIndividualTT = new TupleTag<>();
+        TupleTag<BaseItem> baseItemTT = new TupleTag<>();
+
+        return KeyedPCollectionTuple.of(selectedIndividualTT, selectedIndividual)
+                .and(baseItemTT, result.get(baseItemAtKeyTT))
                 .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new CreateIndividualsFromIndividualFn<GenomeT>(indiTupleTag, baseItemTupleTag)))
-                .apply(new ModelSimAnn<>(mutateTransform, fitnessTransform, t*alpha, tmin, alpha));
+                .apply(ParDo.of(new IndividualsFromIndividualFn<>(selectedIndividualTT, baseItemTT)))
+                .apply(new ModelSimAnn<>(mutateTransform, evaluateTransform, t * alpha, tmin, alpha));
     }
 }

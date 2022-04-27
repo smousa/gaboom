@@ -5,23 +5,23 @@ import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.join.CoGbkResult;
 import org.apache.beam.sdk.transforms.join.CoGroupByKey;
 import org.apache.beam.sdk.transforms.join.KeyedPCollectionTuple;
-import org.apache.beam.sdk.values.*;
+import org.apache.beam.sdk.values.KV;
+import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.PCollectionList;
+import org.apache.beam.sdk.values.TupleTag;
 import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.SelectIndividuals;
 import org.omegabyte.gaboom.transforms.Crossover;
 import org.omegabyte.gaboom.transforms.Evaluate;
 import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Select;
-import org.omegabyte.gaboom.transforms.utils.GenerateOffspringsTransform;
-import org.omegabyte.gaboom.transforms.utils.Individuals2SelectIndividualsFn;
-import org.omegabyte.gaboom.transforms.utils.UniteFamilyFn;
 
 public class ModelDownToSize<GenomeT> extends ModelTransform<GenomeT> {
     private final Select.SelectFn<GenomeT> selectFnA;
     private final Select.SelectFn<GenomeT> selectFnB;
     private final Crossover.CrossoverTransform<GenomeT> crossoverTransform;
     private final Mutate.MutateTransform<GenomeT> mutateTransform;
-    private final Evaluate.FitnessTransform<GenomeT> fitnessTransform;
+    private final Evaluate.EvaluateTransform<GenomeT> evaluateTransform;
     private final int numOffsprings;
 
     public ModelDownToSize(Select.SelectFn<GenomeT> selectFnA, Select.SelectFn<GenomeT> selectFnB, Crossover.CrossoverTransform<GenomeT> crossoverTransform, Mutate.MutateTransform<GenomeT> mutateTransform, Evaluate.FitnessTransform<GenomeT> fitnessTransform, int numOffsprings) {
@@ -29,17 +29,24 @@ public class ModelDownToSize<GenomeT> extends ModelTransform<GenomeT> {
         this.selectFnB = selectFnB;
         this.crossoverTransform = crossoverTransform;
         this.mutateTransform = mutateTransform;
-        this.fitnessTransform = fitnessTransform;
+        this.evaluateTransform = Evaluate.as(fitnessTransform);
         this.numOffsprings = numOffsprings;
     }
 
-    static class ModelDownToSizeFn<GenomeT> extends DoFn<KV<String, CoGbkResult>, KV<String, SelectIndividuals<GenomeT>>> {
-        private final TupleTag<Integer> popSizeTupleTag;
-        private final TupleTag<Individuals<GenomeT>> individualsTupleTag;
+    static class GetPopulationSizeFn<GenomeT> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, Integer>> {
+        @ProcessElement
+        public void processElement(ProcessContext c) {
+            c.output(KV.of(c.element().getKey(), c.element().getValue().getIndividuals().size()));
+        }
+    }
 
-        public ModelDownToSizeFn(TupleTag<Integer> popSizeTupleTag, TupleTag<Individuals<GenomeT>> individualsTupleTag) {
-            this.popSizeTupleTag = popSizeTupleTag;
-            this.individualsTupleTag = individualsTupleTag;
+    static class IndividualsWithSizeToSelectorFn<GenomeT> extends DoFn<KV<String, CoGbkResult>, KV<String, SelectIndividuals<GenomeT>>> {
+        private final TupleTag<Individuals<GenomeT>> populationTT;
+        private final TupleTag<Integer> nTT;
+
+        public IndividualsWithSizeToSelectorFn(TupleTag<Individuals<GenomeT>> populationTT, TupleTag<Integer> nTT) {
+            this.populationTT = populationTT;
+            this.nTT = nTT;
         }
 
         @ProcessElement
@@ -47,41 +54,33 @@ public class ModelDownToSize<GenomeT> extends ModelTransform<GenomeT> {
             String key = c.element().getKey();
             CoGbkResult result = c.element().getValue();
 
-            int popSize = result.getOnly(popSizeTupleTag);
-            Individuals<GenomeT> individuals = result.getOnly(individualsTupleTag);
-            c.output(KV.of(key, new SelectIndividuals<>(individuals, popSize)));
+            Individuals<GenomeT> individuals = result.getOnly(populationTT);
+            int n = result.getOnly(nTT);
+            c.output(KV.of(key, new SelectIndividuals<>(individuals, n)));
         }
     }
 
     @Override
     public PCollection<KV<String, Individuals<GenomeT>>> expand(PCollection<KV<String, Individuals<GenomeT>>> input) {
+        // Get the size of the population
+        PCollection<KV<String, Integer>> populationSize = input.apply(ParDo.of(new GetPopulationSizeFn<>()));
 
         // Make offsprings from the initial population
-        TupleTag<KV<String, Integer>> sizeIndexTupleTag = new TupleTag<>();
-        TupleTag<KV<String, SelectIndividuals<GenomeT>>> selectedIndividualsTupleTag = new TupleTag<>();
-
-        PCollectionTuple result = input.apply(ParDo.of(new Individuals2SelectIndividualsFn<GenomeT>(sizeIndexTupleTag, numOffsprings))
-                .withOutputTags(selectedIndividualsTupleTag, TupleTagList.of(sizeIndexTupleTag)));
-
-        PCollection<KV<String, Individuals<GenomeT>>> offspringsPCollection = result.get(selectedIndividualsTupleTag)
+        PCollection<KV<String, Individuals<GenomeT>>> offsprings = input.apply(ParDo.of(new IndividualsToSelectorFn<>(numOffsprings)))
                 .apply(new GenerateOffspringsTransform<>(selectFnA, crossoverTransform, mutateTransform));
 
-        // Merge offsprings back to initial population, utils and sort
-        TupleTag<Individuals<GenomeT>> firstGenTupleTag = new TupleTag<>();
-        TupleTag<Individuals<GenomeT>> nextGenTupleTag = new TupleTag<>();
-        PCollection<KV<String, Individuals<GenomeT>>> mergedPopulationPCollection = KeyedPCollectionTuple.of(firstGenTupleTag, input)
-                .and(nextGenTupleTag, offspringsPCollection)
-                .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new UniteFamilyFn<>(firstGenTupleTag, nextGenTupleTag)))
-                .apply(Evaluate.as(fitnessTransform));
+        // Append offsprings back into the initial population and evaluate
+        PCollection<KV<String, Individuals<GenomeT>>> cumulativePopulation = PCollectionList.of(input).and(offsprings)
+                .apply(new AppendToPopulationTransform<>())
+                .apply(evaluateTransform);
 
         // Reduce the population back to its original size
-        TupleTag<Integer> popSizeTupleTag = new TupleTag<>();
-        TupleTag<Individuals<GenomeT>> individualsTupleTag = new TupleTag<>();
-        return KeyedPCollectionTuple.of(popSizeTupleTag, result.get(sizeIndexTupleTag))
-                .and(individualsTupleTag, mergedPopulationPCollection)
+        TupleTag<Individuals<GenomeT>> cumulativePopulationTT = new TupleTag<>();
+        TupleTag<Integer> populationSizeTT = new TupleTag<>();
+        return KeyedPCollectionTuple.of(cumulativePopulationTT, cumulativePopulation)
+                .and(populationSizeTT, populationSize)
                 .apply(CoGroupByKey.create())
-                .apply(ParDo.of(new ModelDownToSizeFn<>(popSizeTupleTag, individualsTupleTag)))
+                .apply(ParDo.of(new IndividualsWithSizeToSelectorFn<>(cumulativePopulationTT, populationSizeTT)))
                 .apply(Select.as(selectFnB));
     }
 }
