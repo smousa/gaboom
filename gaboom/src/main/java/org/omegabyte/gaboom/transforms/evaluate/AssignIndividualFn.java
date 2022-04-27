@@ -1,4 +1,4 @@
-package org.omegabyte.gaboom.transforms.utils;
+package org.omegabyte.gaboom.transforms.evaluate;
 
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.join.CoGbkResult;
