@@ -9,10 +9,10 @@ import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Select;
 import org.omegabyte.gaboom.transforms.select.SelectEliteFn;
 
-import javax.sql.rowset.serial.SerialArray;
+import java.io.Serializable;
 import java.util.List;
 
-public class ModelSteadyStateStrict<GenomeT extends SerialArray> extends ModelTransform<GenomeT> {
+public class ModelSteadyStateStrict<GenomeT extends Serializable> extends ModelTransform<GenomeT> {
     private final Select.SelectFn<GenomeT> selectFn;
     private final Crossover.CrossoverTransform<GenomeT> crossoverTransform;
     private final Mutate.MutateTransform<GenomeT> mutateTransform;
@@ -30,7 +30,7 @@ public class ModelSteadyStateStrict<GenomeT extends SerialArray> extends ModelTr
         // Select individuals to crossover
         TupleTag<KV<String, List<Integer>>> selectedIndexesAtKeyTT = new TupleTag<>();
         TupleTag<KV<String, Individuals<GenomeT>>> selectedIndividualsAtKeyTT = new TupleTag<>();
-        PCollectionTuple result = input.apply(ParDo.of(new IndividualsToSelectorFn<>(2)))
+        PCollectionTuple result = input.apply("SelectParents", ParDo.of(new IndividualsToSelectorFn<>(2)))
                 .apply(Select.as(selectFn, selectedIndexesAtKeyTT, selectedIndividualsAtKeyTT));
 
         // Produce offspring
@@ -42,7 +42,7 @@ public class ModelSteadyStateStrict<GenomeT extends SerialArray> extends ModelTr
         PCollection<KV<String, Individuals<GenomeT>>> selectedIndividuals = PCollectionList.of(result.get(selectedIndividualsAtKeyTT)).and(offspring)
                 .apply(new AppendToPopulationTransform<>())
                 .apply(evaluateTransform)
-                .apply(ParDo.of(new IndividualsToSelectorFn<>(2)))
+                .apply("SelectBest", ParDo.of(new IndividualsToSelectorFn<>(2)))
                 .apply(Select.as(new SelectEliteFn<>()));
 
         // Replace selected individuals with new selection

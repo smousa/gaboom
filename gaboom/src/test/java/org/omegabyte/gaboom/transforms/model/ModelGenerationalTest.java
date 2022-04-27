@@ -22,7 +22,8 @@ import org.omegabyte.gaboom.transforms.select.SelectTournamentFn;
 
 import java.io.Serializable;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class ModelGenerationalTest {
     private static final int seed = 0;

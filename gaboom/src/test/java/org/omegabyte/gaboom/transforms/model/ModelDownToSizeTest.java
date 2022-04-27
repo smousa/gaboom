@@ -19,7 +19,6 @@ import org.omegabyte.gaboom.transforms.Evaluate;
 import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Populate;
 import org.omegabyte.gaboom.transforms.select.SelectEliteFn;
-import org.omegabyte.gaboom.transforms.select.SelectRouletteFn;
 import org.omegabyte.gaboom.transforms.select.SelectTournamentFn;
 
 import java.io.Serializable;

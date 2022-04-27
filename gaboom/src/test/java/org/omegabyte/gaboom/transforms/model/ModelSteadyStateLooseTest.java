@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.omegabyte.gaboom.BaseItem;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
+import org.omegabyte.gaboom.transforms.Crossover;
 import org.omegabyte.gaboom.transforms.Evaluate;
 import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Populate;
@@ -22,8 +23,9 @@ import org.omegabyte.gaboom.transforms.select.SelectTournamentFn;
 import java.io.Serializable;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-public class ModelMutateStrictTest {
+public class ModelSteadyStateLooseTest {
     private static final int seed = 0;
     private PCollection<KV<String, Individuals<String>>> input;
 
@@ -39,7 +41,7 @@ public class ModelMutateStrictTest {
 
     @Before
     public void setUpTest() {
-        ModelTest.SECRET_WORD = "emancipated";
+        ModelTest.SECRET_WORD = "hogwash";
         input = pipeline.apply(Create.of(new BaseItem(seed)))
                 .apply(Populate.as(new ModelTest.PopulateFn()).withPopSize(5))
                 .apply(ParDo.of(new ToKVIndividuals()))
@@ -47,12 +49,11 @@ public class ModelMutateStrictTest {
     }
 
     @Test
-    public void testModelMutateStrict() {
-        PCollection<KV<String, Individuals<String>>> output = input.apply(new ModelMutateStrict<>(
+    public void testModelSteadyStateLoose() {
+        PCollection<KV<String, Individuals<String>>> output = input.apply(new ModelSteadyStateLoose<>(
                 new SelectTournamentFn<>(2),
-                Mutate.as(new ModelTest.MutateFn(3)),
-                new ModelTest.FitnessTransform(),
-                2));
+                Crossover.as(new ModelTest.CrossoverFn()).withCrossRate(0.8),
+                Mutate.as(new ModelTest.MutateFn(3)).withMutRate(0.8)));
         PAssert.that(output).satisfies((SerializableFunction<Iterable<KV<String, Individuals<String>>>, Void>) kvs -> {
             KV<String, Individuals<String>> result = kvs.iterator().next();
             assertEquals("test", result.getKey());
@@ -61,32 +62,31 @@ public class ModelMutateStrictTest {
             Individual<String> ind;
 
             ind = result.getValue().getIndividuals().get(0);
-            assertEquals("1r5rgf.yc4", ind.getId());
-            assertEquals("farhfopmfoj", ind.getGenome());
-            assertEquals(87.0, ind.getFitness(), 0);
+            assertEquals("QdYlyc", ind.getId());
+            assertEquals("jdgylxk", ind.getGenome());
+            assertNull(ind.getFitness());
 
             ind = result.getValue().getIndividuals().get(1);
-            assertEquals("QsE9ng", ind.getId());
-            assertEquals("xtspsjdgylu", ind.getGenome());
-            assertEquals(110.0, ind.getFitness(), 0);
+            assertEquals("YZMO9P", ind.getId());
+            assertEquals("locfljb", ind.getGenome());
+            assertEquals(51.0, ind.getFitness(), 0);
 
             ind = result.getValue().getIndividuals().get(2);
-            assertEquals("5hpLmu", ind.getId());
-            assertEquals("ybcwvmgnykr", ind.getGenome());
-            assertEquals(112.0, ind.getFitness(), 0);
+            assertEquals("KhLr8R", ind.getId());
+            assertEquals("xvnjhpd", ind.getGenome());
+            assertEquals(57.0, ind.getFitness(), 0);
 
             ind = result.getValue().getIndividuals().get(3);
-            assertEquals("O9PiSi", ind.getId());
-            assertEquals("qlocfljbepo", ind.getGenome());
-            assertEquals(88.0, ind.getFitness(), 0);
+            assertEquals("CCKEN2.Pux", ind.getId());
+            assertEquals("jhgveme", ind.getGenome());
+            assertNull(ind.getFitness());
 
             ind = result.getValue().getIndividuals().get(4);
-            assertEquals("8Ry8RZ", ind.getId());
-            assertEquals("xvnjhpdqdxv", ind.getGenome());
-            assertEquals(138.0, ind.getFitness(), 0);
+            assertEquals("6hYkdm", ind.getId());
+            assertEquals("astvybc", ind.getGenome());
+            assertEquals(71.0, ind.getFitness(), 0);
             return null;
         });
         pipeline.run();
-
     }
 }
