@@ -1,19 +1,17 @@
 package org.omegabyte.gaboom.transforms;
 
-import org.apache.beam.sdk.transforms.Combine;
-import org.apache.beam.sdk.transforms.Flatten;
-import org.apache.beam.sdk.transforms.PTransform;
-import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.join.CoGroupByKey;
-import org.apache.beam.sdk.transforms.join.KeyedPCollectionTuple;
+import org.apache.beam.sdk.transforms.*;
 import org.apache.beam.sdk.values.*;
 import org.omegabyte.gaboom.BaseItem;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
-import org.omegabyte.gaboom.transforms.evaluate.*;
+import org.omegabyte.gaboom.transforms.evaluate.AssignIndividualTransform;
+import org.omegabyte.gaboom.transforms.evaluate.CreateIndividualsTransform;
+import org.omegabyte.gaboom.transforms.evaluate.IndexIndividualFn;
+import org.omegabyte.gaboom.transforms.evaluate.SortIndividualsFn;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Random;
 
 public class Evaluate {
 
@@ -24,6 +22,38 @@ public class Evaluate {
 
         public EvaluateTransform(FitnessTransform<GenomeT> fitnessTransform) {
             this.fitnessTransform = fitnessTransform;
+        }
+
+        static class ExpandIndividualsFn<GenomeT extends Serializable> extends DoFn<KV<String, Individuals<GenomeT>>, Individual<GenomeT>> {
+            private final TupleTag<KV<String, String>> keyAtIdTT;
+            private final TupleTag<KV<String, BaseItem>> baseItemAtKeyTT;
+            private final TupleTag<KV<String, Individual<GenomeT>>> evaluatedAtKeyTT;
+
+            public ExpandIndividualsFn(TupleTag<KV<String, String>> keyAtIdTT, TupleTag<KV<String, BaseItem>> baseItemAtKeyTT, TupleTag<KV<String, Individual<GenomeT>>> evaluatedAtKeyTT) {
+                this.keyAtIdTT = keyAtIdTT;
+                this.baseItemAtKeyTT = baseItemAtKeyTT;
+                this.evaluatedAtKeyTT = evaluatedAtKeyTT;
+            }
+
+            @ProcessElement
+            public void processElement(ProcessContext c) {
+                String key = c.element().getKey();
+                Individuals<GenomeT> individuals = c.element().getValue();
+
+                Random r = new Random();
+                r.setSeed(individuals.getSeed());
+
+                c.output(baseItemAtKeyTT, KV.of(key, new BaseItem(r.nextLong())));
+                individuals.getIndividuals().forEach(i -> {
+                    if (i.getFitness() != null) {
+                        c.output(evaluatedAtKeyTT, KV.of(key, i));
+                        return;
+                    }
+
+                    c.output(keyAtIdTT, KV.of(i.getId(), key));
+                    c.output(i);
+                });
+            }
         }
 
         @Override
