@@ -42,12 +42,7 @@ public class Evaluate {
                     .apply(ParDo.of(new IndexIndividualFn<>()));
 
             // apply indexes based on input id
-            TupleTag<String> idTupleTag = new TupleTag<>();
-            TupleTag<Individual<GenomeT>> indexedIndividualTupleTag = new TupleTag<>();
-            PCollection<KV<String, Individual<GenomeT>>> evaluated = KeyedPCollectionTuple.of(idTupleTag, result.get(keyAtIdTT))
-                    .and(indexedIndividualTupleTag, indexedIndividualPCollection)
-                    .apply(CoGroupByKey.create())
-                    .apply(ParDo.of(new AssignIndividualFn<>(idTupleTag, indexedIndividualTupleTag)));
+            PCollection<KV<String, Individual<GenomeT>>> evaluated = indexedIndividualPCollection.apply(AssignIndividualTransform.of(result.get(keyAtIdTT)));
 
             // combine all inputs into the sorted list
             PCollection<KV<String, List<Individual<GenomeT>>>> individualsPCollection = PCollectionList.of(evaluated).and(result.get(evaluatedAtKeyTT))
