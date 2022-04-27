@@ -1,6 +1,7 @@
 package org.omegabyte.gaboom.transforms.select;
 
 import org.apache.beam.sdk.values.KV;
+import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.SelectIndividuals;
 import org.omegabyte.gaboom.transforms.Select;
@@ -37,20 +38,22 @@ public class SelectTournamentFn<GenomeT> extends Select.SelectFn<GenomeT> {
         }
 
         List<Integer> indices = new ArrayList<>();
-        Individuals<GenomeT> individuals = new Individuals<>(rng.nextLong());
+        List<Individual<GenomeT>> individualList = new ArrayList<>();
         for (int i = 0; i < selectIndividuals.getN(); i++) {
-            int maxIndex = 0;
-            for (int j = 1; j < nContestants; j++) {
+            int maxIndex = options.size();
+            for (int j = 0; j < nContestants; j++) {
                 int nextIndex = rng.nextInt(options.size());
-                if (nextIndex > maxIndex) {
+                if (nextIndex < maxIndex) {
                     maxIndex = nextIndex;
                 }
             }
-            indices.add(maxIndex);
-            individuals.getIndividuals().add(selectIndividuals.getIndividuals().get(maxIndex));
+
+            int value = options.remove(maxIndex);
+            indices.add(value);
+            individualList.add(selectIndividuals.getIndividuals().get(value));
             options.remove(maxIndex);
         }
         c.output(selectIndicesTupleTag, KV.of(key, indices));
-        c.output(KV.of(key, individuals));
+        c.output(KV.of(key, new Individuals<>(rng.nextLong(), individualList)));
     }
 }

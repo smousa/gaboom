@@ -16,8 +16,12 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class SelectEliteFnTest {
+class SelectTournamentFnTest {
     private List<Individual<Integer>> individualsList;
+
+    public static Individual[] arrayOfIndividuals(Individual ...individuals) {
+        return individuals;
+    }
 
     @BeforeEach
     public void initEach() {
@@ -36,39 +40,42 @@ class SelectEliteFnTest {
         individual = new Individual<>("d", 4);
         individual.setFitness(2.0);
         individualsList.add(individual);
+        individual = new Individual<>("e", 5);
+        individual.setFitness(2.7);
+        individualsList.add(individual);
+        individual = new Individual<>("f", 6);
+        individual.setFitness(2.8);
+        individualsList.add(individual);
     }
 
     @Test
-    @DisplayName("It should return the first n individuals and their indices from the input")
+    @DisplayName("It should select n individuals")
     public void testProcessElement() throws Exception {
         TupleTag<KV<String, List<Integer>>> selectedIndexesTT = new TupleTag<>();
-        SelectEliteFn<Integer> selectEliteFn = new SelectEliteFn<>();
-        selectEliteFn.setSelectIndicesTupleTag(selectedIndexesTT);
-        DoFnTester<KV<String, SelectIndividuals<Integer>>, KV<String, Individuals<Integer>>> fnTester = DoFnTester.of(selectEliteFn);
+        SelectTournamentFn<Integer> selectTournamentFn = new SelectTournamentFn<>(3);
+        selectTournamentFn.setSelectIndicesTupleTag(selectedIndexesTT);
+        DoFnTester<KV<String, SelectIndividuals<Integer>>, KV<String, Individuals<Integer>>> fnTester = DoFnTester.of(selectTournamentFn);
 
-        KV<String, SelectIndividuals<Integer>> testInput = KV.of("test", new SelectIndividuals<>(new Individuals<>(20, individualsList), 2));
+        KV<String, SelectIndividuals<Integer>> testInput = KV.of("test", new SelectIndividuals<>(new Individuals<>(0, individualsList), 2));
         List<KV<String, Individuals<Integer>>> result = fnTester.processBundle(testInput);
         assert result.size() == 1;
         assertEquals("test", result.get(0).getKey());
-
         Individuals<Integer> individuals = result.get(0).getValue();
-        assertEquals(20, individuals.getSeed());
-        assertArrayEquals(individualsList.subList(0, 2).toArray(), individuals.getIndividuals().toArray());
+        assertEquals(-8292973307042192125L, individuals.getSeed());
+        assertArrayEquals(arrayOfIndividuals(individualsList.get(0), individualsList.get(3)), individuals.getIndividuals().toArray());
 
         List<KV<String, List<Integer>>> resultIndices = fnTester.takeOutputElements(selectedIndexesTT);
-        assert resultIndices.size() == 1;
+        assert  resultIndices.size() == 1;
         assertEquals("test", resultIndices.get(0).getKey());
-
-        List<Integer> indexes = resultIndices.get(0).getValue();
-        assertArrayEquals(new Integer[]{0, 1}, indexes.toArray());
+        List<Integer> indices = resultIndices.get(0).getValue();
+        assertArrayEquals(new Integer[]{0,3}, indices.toArray());
     }
 
     @Test
-    @DisplayName("It should not return anything if n is larger than the number of provided individuals")
-    public void testNTooBig() throws Exception {
-        DoFnTester<KV<String, SelectIndividuals<Integer>>, KV<String, Individuals<Integer>>> fnTester = DoFnTester.of(new SelectEliteFn<>());
+    @DisplayName("It should not return anything if there are not enough individuals")
+    public void testNotEnough() throws Exception {
+        DoFnTester<KV<String, SelectIndividuals<Integer>>, KV<String, Individuals<Integer>>> fnTester = DoFnTester.of(new SelectTournamentFn<>(5));
         KV<String, SelectIndividuals<Integer>> testInput = KV.of("test", new SelectIndividuals<>(new Individuals<>(20, individualsList), 10));
-        List<KV<String, Individuals<Integer>>> result = fnTester.processBundle(testInput);
-        assert result.isEmpty();
+        assert fnTester.processBundle(testInput).isEmpty();
     }
 }

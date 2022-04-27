@@ -11,7 +11,6 @@ import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.SelectIndividuals;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -70,7 +69,6 @@ class SelectRouletteFnTest {
     @DisplayName("It should not return anything if there are no individuals to choose from")
     public void testNoIndividuals() throws Exception {
         DoFnTester<KV<String, SelectIndividuals<Integer>>, KV<String, Individuals<Integer>>> fnTester = DoFnTester.of(new SelectRouletteFn<>());
-
         KV<String, SelectIndividuals<Integer>> testInput = KV.of("test", new SelectIndividuals<Integer>(new Individuals<>(20), 10));
         assert fnTester.processBundle(testInput).isEmpty();
     }
