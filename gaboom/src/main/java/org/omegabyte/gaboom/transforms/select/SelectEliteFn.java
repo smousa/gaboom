@@ -1,6 +1,7 @@
 package org.omegabyte.gaboom.transforms.select;
 
 import org.apache.beam.sdk.values.KV;
+import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.SelectIndividuals;
 import org.omegabyte.gaboom.transforms.Select;
@@ -10,6 +11,10 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * SelectEliteFn returns the best n individuals from the population.
+ * @param <GenomeT>
+ */
 public class SelectEliteFn<GenomeT> extends Select.SelectFn<GenomeT> {
     private static final Logger logger = LoggerFactory.getLogger(SelectEliteFn.class);
 
@@ -24,12 +29,12 @@ public class SelectEliteFn<GenomeT> extends Select.SelectFn<GenomeT> {
         }
 
         List<Integer> indices = new ArrayList<>();
-        Individuals<GenomeT> individuals = new Individuals<>(selectIndividuals.getSeed());
+        List<Individual<GenomeT>> individuals = new ArrayList<>();
         for (int i = 0; i < selectIndividuals.getN(); i++) {
             indices.add(i);
-            individuals.getIndividuals().add(selectIndividuals.getIndividuals().get(i));
+            individuals.add(selectIndividuals.getIndividuals().get(i));
         }
         c.output(selectIndicesTupleTag, KV.of(key, indices));
-        c.output(KV.of(key, individuals));
+        c.output(KV.of(key, new Individuals<>(selectIndividuals.getSeed(), individuals)));
     }
 }

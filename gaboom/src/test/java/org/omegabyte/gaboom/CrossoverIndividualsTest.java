@@ -2,9 +2,8 @@ package org.omegabyte.gaboom;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.omegabyte.gaboom.transforms.model.GenerateOffspringsTransform;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CrossoverIndividualsTest {
 
