@@ -12,13 +12,14 @@ import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.transforms.evaluate.*;
 
+import java.io.Serializable;
 import java.util.List;
 
 public class Evaluate {
 
-    public abstract class FitnessTransform<GenomeT> extends PTransform<PCollection<Individual<GenomeT>>, PCollection<Individual<GenomeT>>> {}
+    public abstract class FitnessTransform<GenomeT extends Serializable> extends PTransform<PCollection<Individual<GenomeT>>, PCollection<Individual<GenomeT>>> {}
 
-    public static class EvaluateTransform<GenomeT> extends PTransform<PCollection<KV<String, Individuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
+    public static class EvaluateTransform<GenomeT extends Serializable> extends PTransform<PCollection<KV<String, Individuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
         private final FitnessTransform<GenomeT> fitnessTransform;
 
         public EvaluateTransform(FitnessTransform<GenomeT> fitnessTransform) {
@@ -63,7 +64,7 @@ public class Evaluate {
         }
     }
 
-    public static <GenomeT> EvaluateTransform<GenomeT> as(FitnessTransform<GenomeT> fitnessTransform) {
+    public static <GenomeT extends Serializable> EvaluateTransform<GenomeT> as(FitnessTransform<GenomeT> fitnessTransform) {
         return new EvaluateTransform<>(fitnessTransform);
     }
 }

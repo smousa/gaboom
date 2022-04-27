@@ -11,9 +11,10 @@ import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Select;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ModelMutateLoose<GenomeT> extends ModelTransform<GenomeT> {
+public class ModelMutateLoose<GenomeT extends Serializable> extends ModelTransform<GenomeT> {
     private final Select.SelectFn<GenomeT> selectFn;
     private final Mutate.MutateTransform<GenomeT> mutateTransform;
     private final int numChosen;

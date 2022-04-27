@@ -8,9 +8,10 @@ import org.omegabyte.gaboom.Individuals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ReplacePopulationAtIndexesFn<GenomeT> extends DoFn<KV<String, CoGbkResult>, KV<String, Individuals<GenomeT>>> {
+public class ReplacePopulationAtIndexesFn<GenomeT extends Serializable> extends DoFn<KV<String, CoGbkResult>, KV<String, Individuals<GenomeT>>> {
     private static final Logger logger = LoggerFactory.getLogger(ReplacePopulationAtIndexesFn.class);
 
     private final TupleTag<Individuals<GenomeT>> populationTT;

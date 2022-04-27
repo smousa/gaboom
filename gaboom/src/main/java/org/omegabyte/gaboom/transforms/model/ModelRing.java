@@ -15,11 +15,12 @@ import org.omegabyte.gaboom.transforms.Evaluate;
 import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Select;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class ModelRing<GenomeT> extends ModelTransform<GenomeT> {
+public class ModelRing<GenomeT extends Serializable> extends ModelTransform<GenomeT> {
     private final Select.SelectNoIndexTransform<GenomeT> selectTransform;
     private final Crossover.CrossoverTransform<GenomeT> crossoverTransform;
     private final Mutate.MutateTransform<GenomeT> mutateTransform;
@@ -32,7 +33,7 @@ public class ModelRing<GenomeT> extends ModelTransform<GenomeT> {
         this.evaluateTransform = Evaluate.as(fitnessTransform);
     }
 
-    static class ModelRingFn<GenomeT> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, CrossoverIndividuals<GenomeT>>> {
+    static class ModelRingFn<GenomeT extends Serializable> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, CrossoverIndividuals<GenomeT>>> {
         private final TupleTag<KV<String, String>> indexTupleTag;
         private final TupleTag<KV<String, BaseItem>> baseItemTupleTag;
         private final TupleTag<KV<String, Individuals<GenomeT>>> parentTupleTag;
@@ -65,7 +66,7 @@ public class ModelRing<GenomeT> extends ModelTransform<GenomeT> {
         }
     }
 
-    static class GetBestIndividualFn<GenomeT> extends DoFn<KV<String, CoGbkResult>, KV<String, Individual<GenomeT>>> {
+    static class GetBestIndividualFn<GenomeT extends Serializable> extends DoFn<KV<String, CoGbkResult>, KV<String, Individual<GenomeT>>> {
         private final TupleTag<Individuals<GenomeT>> rankedTT;
         private final TupleTag<String> keyTT;
 

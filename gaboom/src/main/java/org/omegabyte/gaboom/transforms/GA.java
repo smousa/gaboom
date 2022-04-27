@@ -18,12 +18,13 @@ import org.omegabyte.gaboom.transforms.ga.MapPopulationFn;
 import org.omegabyte.gaboom.transforms.halloffame.HallOfFameTransform;
 import org.omegabyte.gaboom.transforms.model.ModelTransform;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-public class GA<GenomeT> {
+public class GA<GenomeT extends Serializable> {
     // Required fields
     private final int numPops = 1;
     private final Populate.PopulateTransform<GenomeT> populateTransform;

@@ -1,9 +1,10 @@
 package org.omegabyte.gaboom;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
-public class Individuals<GenomeT> extends BaseItem {
+public class Individuals<GenomeT extends Serializable> extends BaseItem  implements Serializable {
     protected List<Individual<GenomeT>> individuals;
 
     public Individuals(long seed) {

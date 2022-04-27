@@ -8,9 +8,10 @@ import org.omegabyte.gaboom.BaseItem;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class CreateIndividualsFn<GenomeT> extends DoFn<KV<String, CoGbkResult>, KV<String, Individuals<GenomeT>>> {
+public class CreateIndividualsFn<GenomeT extends Serializable> extends DoFn<KV<String, CoGbkResult>, KV<String, Individuals<GenomeT>>> {
     private final TupleTag<BaseItem> baseItemTupleTag;
     private final TupleTag<List<Individual<GenomeT>>> individualsTupleTag;
 

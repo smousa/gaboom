@@ -7,9 +7,10 @@ import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionList;
 import org.omegabyte.gaboom.Individual;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class HallOfFameTransform<GenomeT> extends PTransform<PCollection<List<Individual<GenomeT>>>, PCollection<List<Individual<GenomeT>>>> {
+public class HallOfFameTransform<GenomeT extends Serializable> extends PTransform<PCollection<List<Individual<GenomeT>>>, PCollection<List<Individual<GenomeT>>>> {
     private final PCollection<List<Individual<GenomeT>>> hallOfFamePCollection;
     private final int nBest;
 

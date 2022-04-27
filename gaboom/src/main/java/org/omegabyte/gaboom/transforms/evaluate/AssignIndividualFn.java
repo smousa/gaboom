@@ -6,7 +6,9 @@ import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.TupleTag;
 import org.omegabyte.gaboom.Individual;
 
-public class AssignIndividualFn<GenomeT> extends DoFn<KV<String, CoGbkResult>, KV<String, Individual<GenomeT>>> {
+import java.io.Serializable;
+
+public class AssignIndividualFn<GenomeT extends Serializable> extends DoFn<KV<String, CoGbkResult>, KV<String, Individual<GenomeT>>> {
     private final TupleTag<String> indexTupleTag;
     private final TupleTag<Individual<GenomeT>> individualTupleTag;
 

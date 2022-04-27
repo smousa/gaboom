@@ -8,6 +8,7 @@ import org.omegabyte.gaboom.transforms.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -19,7 +20,7 @@ import java.util.Random;
  * individuals are all distinct.
  * @param <GenomeT>
  */
-public class SelectTournamentFn<GenomeT> extends Select.SelectFn<GenomeT> {
+public class SelectTournamentFn<GenomeT extends Serializable> extends Select.SelectFn<GenomeT> {
     private static final Logger logger = LoggerFactory.getLogger(SelectTournamentFn.class);
 
     private final int nContestants;

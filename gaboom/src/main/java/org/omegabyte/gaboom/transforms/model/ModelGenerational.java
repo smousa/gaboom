@@ -8,7 +8,9 @@ import org.omegabyte.gaboom.transforms.Crossover;
 import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Select;
 
-public class ModelGenerational<GenomeT> extends ModelTransform<GenomeT> {
+import java.io.Serializable;
+
+public class ModelGenerational<GenomeT extends Serializable> extends ModelTransform<GenomeT> {
     private final Select.SelectFn<GenomeT> selectFn;
     private final Crossover.CrossoverTransform<GenomeT> crossoverTransform;
     private final Mutate.MutateTransform<GenomeT> mutateTransform;

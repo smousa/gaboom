@@ -3,10 +3,11 @@ package org.omegabyte.gaboom.transforms.evaluate;
 import org.apache.beam.sdk.transforms.Combine;
 import org.omegabyte.gaboom.Individual;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SortIndividualsFn<GenomeT> extends Combine.CombineFn<Individual<GenomeT>, List<Individual<GenomeT>>, List<Individual<GenomeT>>> {
+public class SortIndividualsFn<GenomeT extends Serializable> extends Combine.CombineFn<Individual<GenomeT>, List<Individual<GenomeT>>, List<Individual<GenomeT>>> {
 
     @Override
     public List<Individual<GenomeT>> createAccumulator() {

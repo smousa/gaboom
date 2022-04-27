@@ -11,12 +11,13 @@ import org.omegabyte.gaboom.transforms.Evaluate;
 import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Select;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ModelMutateStrict<GenomeT> extends ModelTransform<GenomeT> {
+public class ModelMutateStrict<GenomeT extends Serializable> extends ModelTransform<GenomeT> {
     private final Select.SelectFn<GenomeT> selectFn;
     private final Mutate.MutateTransform<GenomeT> mutateTransform;
     private final Evaluate.EvaluateTransform<GenomeT> evaluateTransform;
@@ -29,7 +30,7 @@ public class ModelMutateStrict<GenomeT> extends ModelTransform<GenomeT> {
         this.numChosen = numChosen;
     }
 
-    static class DedupeIndividualsFn<GenomeT> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, Individuals<GenomeT>>> {
+    static class DedupeIndividualsFn<GenomeT extends Serializable> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, Individuals<GenomeT>>> {
         @ProcessElement
         public void processElement(ProcessContext c) {
             String key = c.element().getKey();

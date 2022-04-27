@@ -7,7 +7,9 @@ import org.omegabyte.gaboom.BaseItem;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 
-public class ExpandIndividualsFn<GenomeT> extends DoFn<KV<String, Individuals<GenomeT>>, Individual<GenomeT>> {
+import java.io.Serializable;
+
+public class ExpandIndividualsFn<GenomeT extends Serializable> extends DoFn<KV<String, Individuals<GenomeT>>, Individual<GenomeT>> {
     private final TupleTag<KV<String, String>> keyAtIdTT;
     private final TupleTag<KV<String, BaseItem>> baseItemAtKeyTT;
     private final TupleTag<KV<String, Individual<GenomeT>>> evaluatedAtKeyTT;

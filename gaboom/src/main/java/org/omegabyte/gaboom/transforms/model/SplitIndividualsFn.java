@@ -6,9 +6,10 @@ import org.apache.beam.sdk.values.TupleTag;
 import org.omegabyte.gaboom.BaseItem;
 import org.omegabyte.gaboom.Individuals;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public class SplitIndividualsFn<GenomeT> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, Individuals<GenomeT>>> {
+public class SplitIndividualsFn<GenomeT extends Serializable> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, Individuals<GenomeT>>> {
     private final TupleTag<KV<String, String>> idIndexTupleTag;
     private final TupleTag<KV<String, BaseItem>> baseItemIndexTupleTag;
 

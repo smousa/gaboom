@@ -8,6 +8,7 @@ import org.omegabyte.gaboom.transforms.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -17,7 +18,7 @@ import java.util.Random;
  * known as fitness proportionate selection).
  * @param <GenomeT>
  */
-public class SelectRouletteFn<GenomeT> extends Select.SelectFn<GenomeT> {
+public class SelectRouletteFn<GenomeT extends Serializable> extends Select.SelectFn<GenomeT> {
     private static final Logger logger = LoggerFactory.getLogger(SelectRouletteFn.class);
 
     private List<Double> getWheel(List<Individual<GenomeT>> individuals) {

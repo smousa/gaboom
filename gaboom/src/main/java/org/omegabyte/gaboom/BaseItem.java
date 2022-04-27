@@ -1,8 +1,9 @@
 package org.omegabyte.gaboom;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public class BaseItem {
+public class BaseItem implements Serializable {
     private long seed;
 
     public BaseItem(long seed) {

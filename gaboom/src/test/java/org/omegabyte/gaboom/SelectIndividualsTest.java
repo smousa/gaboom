@@ -1,25 +1,24 @@
 package org.omegabyte.gaboom;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
-class SelectIndividualsTest {
+public class SelectIndividualsTest {
 
     @Test
-    @DisplayName("It should return n")
+    //@DisplayName("It should return n")
     public void testGetN() {
         SelectIndividuals<Integer> selectIndividuals = new SelectIndividuals<>(0, Collections.emptyList(), 4);
         assertEquals(4, selectIndividuals.getN());
     }
 
     @Test
-    @DisplayName("It should set values base on the individuals")
+    //@DisplayName("It should set values base on the individuals")
     public void testSelectIndividualsFromIndividuals() {
         List<Individual<Integer>> individualList = new ArrayList<>();
         individualList.add(new Individual<>("p1", 1));

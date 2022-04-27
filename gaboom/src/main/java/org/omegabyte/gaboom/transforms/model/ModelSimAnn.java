@@ -12,9 +12,10 @@ import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.transforms.Evaluate;
 import org.omegabyte.gaboom.transforms.Mutate;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public class ModelSimAnn<GenomeT> extends ModelTransform<GenomeT> {
+public class ModelSimAnn<GenomeT extends Serializable> extends ModelTransform<GenomeT> {
     private final Mutate.MutateTransform<GenomeT> mutateTransform;
     private final Evaluate.EvaluateTransform<GenomeT> evaluateTransform;
     private final double t;
@@ -37,7 +38,7 @@ public class ModelSimAnn<GenomeT> extends ModelTransform<GenomeT> {
         this.alpha = alpha;
     }
 
-    static class ModelSimAnnFn<GenomeT> extends DoFn<KV<String, CoGbkResult>, KV<String, Individual<GenomeT>>> {
+    static class ModelSimAnnFn<GenomeT extends Serializable> extends DoFn<KV<String, CoGbkResult>, KV<String, Individual<GenomeT>>> {
         private final TupleTag<Individuals<GenomeT>> firstGenTupleTag;
         private final TupleTag<Individuals<GenomeT>> nextGenTupleTag;
         private final TupleTag<String> idTupleTag;

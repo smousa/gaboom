@@ -16,7 +16,9 @@ import org.omegabyte.gaboom.transforms.Evaluate;
 import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Select;
 
-public class ModelDownToSize<GenomeT> extends ModelTransform<GenomeT> {
+import java.io.Serializable;
+
+public class ModelDownToSize<GenomeT extends Serializable> extends ModelTransform<GenomeT> {
     private final Select.SelectFn<GenomeT> selectFnA;
     private final Select.SelectFn<GenomeT> selectFnB;
     private final Crossover.CrossoverTransform<GenomeT> crossoverTransform;
@@ -33,14 +35,14 @@ public class ModelDownToSize<GenomeT> extends ModelTransform<GenomeT> {
         this.numOffsprings = numOffsprings;
     }
 
-    static class GetPopulationSizeFn<GenomeT> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, Integer>> {
+    static class GetPopulationSizeFn<GenomeT extends Serializable> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, Integer>> {
         @ProcessElement
         public void processElement(ProcessContext c) {
             c.output(KV.of(c.element().getKey(), c.element().getValue().getIndividuals().size()));
         }
     }
 
-    static class IndividualsWithSizeToSelectorFn<GenomeT> extends DoFn<KV<String, CoGbkResult>, KV<String, SelectIndividuals<GenomeT>>> {
+    static class IndividualsWithSizeToSelectorFn<GenomeT extends Serializable> extends DoFn<KV<String, CoGbkResult>, KV<String, SelectIndividuals<GenomeT>>> {
         private final TupleTag<Individuals<GenomeT>> populationTT;
         private final TupleTag<Integer> nTT;
 

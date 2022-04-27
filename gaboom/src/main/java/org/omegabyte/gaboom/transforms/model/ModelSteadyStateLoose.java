@@ -12,9 +12,10 @@ import org.omegabyte.gaboom.transforms.Crossover;
 import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Select;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ModelSteadyStateLoose<GenomeT> extends ModelTransform<GenomeT> {
+public class ModelSteadyStateLoose<GenomeT extends Serializable> extends ModelTransform<GenomeT> {
     private final Select.SelectFn<GenomeT> selectFn;
     private final Crossover.CrossoverTransform<GenomeT> crossoverTransform;
     private final Mutate.MutateTransform<GenomeT> mutateTransform;

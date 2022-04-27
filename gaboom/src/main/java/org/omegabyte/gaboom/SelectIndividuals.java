@@ -1,8 +1,9 @@
 package org.omegabyte.gaboom;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class SelectIndividuals<GenomeT> extends Individuals<GenomeT> {
+public class SelectIndividuals<GenomeT extends Serializable> extends Individuals<GenomeT> implements Serializable {
     private final int n;
 
     public SelectIndividuals(long seed, List<Individual<GenomeT>> individuals, int n) {

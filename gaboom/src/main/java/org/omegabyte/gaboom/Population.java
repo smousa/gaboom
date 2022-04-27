@@ -1,9 +1,10 @@
 package org.omegabyte.gaboom;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-public class Population<GenomeT> extends Individuals<GenomeT> {
+public class Population<GenomeT extends Serializable> extends Individuals<GenomeT> implements Serializable {
     private final String id;
     private final long created = new Date().getTime();
     private int generations = -1;

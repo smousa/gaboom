@@ -11,6 +11,7 @@ import org.omegabyte.gaboom.BaseItem;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.Random;
 
 public class Populate {
 
-    public abstract static class PopulateFn<GenomeT> extends DoFn<BaseItem, Individuals<GenomeT>> {
+    public abstract static class PopulateFn<GenomeT extends Serializable> extends DoFn<BaseItem, Individuals<GenomeT>> {
         private int popSize = 1;
 
         public void setPopSize(int popSize) {
@@ -40,7 +41,7 @@ public class Populate {
         }
     }
 
-    public static class PopulateTransform<GenomeT> extends PTransform<PCollection<BaseItem>, PCollection<Individuals<GenomeT>>> {
+    public static class PopulateTransform<GenomeT extends Serializable> extends PTransform<PCollection<BaseItem>, PCollection<Individuals<GenomeT>>> {
         private final PopulateFn<GenomeT> fn;
         private final List<PCollectionView<?>> sideInputs;
 
@@ -70,7 +71,7 @@ public class Populate {
         }
     }
 
-    public static <GenomeT> PopulateTransform<GenomeT> as(PopulateFn<GenomeT> fn) {
+    public static <GenomeT extends Serializable> PopulateTransform<GenomeT> as(PopulateFn<GenomeT> fn) {
         return new PopulateTransform<>(fn, Collections.emptyList());
     }
 }

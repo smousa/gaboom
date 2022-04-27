@@ -1,18 +1,17 @@
 package org.omegabyte.gaboom;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
-class PopulationTest {
+public class PopulationTest {
 
     @Test
-    @DisplayName("It should return an empty population")
-    void testPopulation() throws Exception {
+    //@DisplayName("It should return an empty population")
+    public void testPopulation() throws Exception {
         Population<Integer> population = new Population<>("test");
         assertEquals(0, population.getSeed());
         assertEquals("test", population.getId());
@@ -23,8 +22,8 @@ class PopulationTest {
     }
 
     @Test
-    @DisplayName("It should update the population with the new individuals")
-    void update() {
+    //@DisplayName("It should update the population with the new individuals")
+    public void update() {
         List<Individual<Integer>> individualList = new ArrayList<>();
         individualList.add(new Individual<>("p1", 1));
         individualList.add(new Individual<>("p1", 2));

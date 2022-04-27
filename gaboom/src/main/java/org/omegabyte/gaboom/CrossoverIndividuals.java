@@ -1,6 +1,10 @@
 package org.omegabyte.gaboom;
 
-public class CrossoverIndividuals<GenomeT> extends BaseItem {
+import com.google.common.base.Objects;
+
+import java.io.Serializable;
+
+public class CrossoverIndividuals<GenomeT extends Serializable> extends BaseItem implements Serializable {
     private final Individual<GenomeT> p1;
     private final Individual<GenomeT> p2;
 
@@ -10,9 +14,7 @@ public class CrossoverIndividuals<GenomeT> extends BaseItem {
         this.p2 = p2;
     }
 
-    public Individual<GenomeT> getP1() {
-        return p1;
-    }
+    public Individual<GenomeT> getP1() { return p1; }
 
     public Individual<GenomeT> getP2() { return p2; }
 }

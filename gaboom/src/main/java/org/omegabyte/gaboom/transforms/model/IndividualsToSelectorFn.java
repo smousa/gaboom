@@ -5,7 +5,9 @@ import org.apache.beam.sdk.values.KV;
 import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.SelectIndividuals;
 
-public class IndividualsToSelectorFn<GenomeT> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, SelectIndividuals<GenomeT>>> {
+import java.io.Serializable;
+
+public class IndividualsToSelectorFn<GenomeT extends Serializable> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, SelectIndividuals<GenomeT>>> {
     private final int n;
 
     public IndividualsToSelectorFn(int n) {

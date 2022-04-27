@@ -8,7 +8,9 @@ import org.omegabyte.gaboom.Individuals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IndividualsToCrossoverFn<GenomeT> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, CrossoverIndividuals<GenomeT>>> {
+import java.io.Serializable;
+
+public class IndividualsToCrossoverFn<GenomeT extends Serializable> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, CrossoverIndividuals<GenomeT>>> {
     private static final Logger logger = LoggerFactory.getLogger(IndividualsToCrossoverFn.class);
 
     @ProcessElement

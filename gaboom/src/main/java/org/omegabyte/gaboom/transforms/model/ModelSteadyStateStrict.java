@@ -11,9 +11,10 @@ import org.omegabyte.gaboom.transforms.Mutate;
 import org.omegabyte.gaboom.transforms.Select;
 import org.omegabyte.gaboom.transforms.select.SelectEliteFn;
 
+import javax.sql.rowset.serial.SerialArray;
 import java.util.List;
 
-public class ModelSteadyStateStrict<GenomeT> extends ModelTransform<GenomeT> {
+public class ModelSteadyStateStrict<GenomeT extends SerialArray> extends ModelTransform<GenomeT> {
     private final Select.SelectFn<GenomeT> selectFn;
     private final Crossover.CrossoverTransform<GenomeT> crossoverTransform;
     private final Mutate.MutateTransform<GenomeT> mutateTransform;

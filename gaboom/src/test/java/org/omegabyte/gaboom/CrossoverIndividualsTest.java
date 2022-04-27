@@ -1,15 +1,14 @@
 package org.omegabyte.gaboom;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
-class CrossoverIndividualsTest {
+public class CrossoverIndividualsTest {
 
     @Test
-    @DisplayName("It should get the individuals")
-    void testGetParents() {
+    //@DisplayName("It should get the individuals")
+    public void testGetParents() {
         Individual<Integer> p1 = new Individual<>("p1", 1);
         Individual<Integer> p2 = new Individual<>("p2", 2);
 

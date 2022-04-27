@@ -13,11 +13,12 @@ import org.apache.beam.sdk.values.TupleTag;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AppendToPopulationTransform<GenomeT> extends PTransform<PCollectionList<KV<String, Individuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
-    static class AppendToPopulationFn<GenomeT> extends DoFn<KV<String, CoGbkResult>, KV<String, Individuals<GenomeT>>> {
+public class AppendToPopulationTransform<GenomeT extends Serializable> extends PTransform<PCollectionList<KV<String, Individuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
+    static class AppendToPopulationFn<GenomeT extends Serializable> extends DoFn<KV<String, CoGbkResult>, KV<String, Individuals<GenomeT>>> {
         private final TupleTag<Individuals<GenomeT>> originalTT;
         private final TupleTag<Individuals<GenomeT>> nextTT;
 

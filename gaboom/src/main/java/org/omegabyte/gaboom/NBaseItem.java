@@ -1,6 +1,8 @@
 package org.omegabyte.gaboom;
 
-public class NBaseItem extends BaseItem {
+import java.io.Serializable;
+
+public class NBaseItem extends BaseItem implements Serializable {
     private final int n;
 
     public NBaseItem(long seed, int n) {

@@ -1,18 +1,17 @@
 package org.omegabyte.gaboom;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-class IndividualTest {
+public class IndividualTest {
 
     @Test
-    @DisplayName("It should return the id and the genome")
-    void testIndividual() {
+    //@DisplayName("It should return the id and the genome")
+    public void testIndividual() {
         Individual<String> individual = new Individual<>("testIndividual", "test");
         assertEquals("testIndividual", individual.getId());
         assertEquals("test", individual.getGenome());
@@ -20,8 +19,8 @@ class IndividualTest {
     }
 
     @Test
-    @DisplayName("It should return the random id")
-    void testIndividualWithRandomID() {
+    //@DisplayName("It should return the random id")
+    public void testIndividualWithRandomID() {
         Random r = new Random();
         r.setSeed(0);
         Individual<String> individual = new Individual<>(r, "test");
@@ -31,10 +30,10 @@ class IndividualTest {
     }
 
     @Test
-    @DisplayName("It should return the fitness if it is set")
-    void testSetFitness() {
+    //@DisplayName("It should return the fitness if it is set")
+    public void testSetFitness() {
         Individual<String> individual = new Individual<>("testIndividual", "test");
         individual.setFitness(12.4);
-        assertEquals(12.4, individual.getFitness().doubleValue());
+        assertEquals(12.4, individual.getFitness().doubleValue(), 0);
     }
 }

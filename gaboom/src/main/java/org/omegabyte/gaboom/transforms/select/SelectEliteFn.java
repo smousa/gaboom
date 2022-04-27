@@ -8,6 +8,7 @@ import org.omegabyte.gaboom.transforms.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
  * SelectEliteFn returns the n best individuals of a group.
  * @param <GenomeT>
  */
-public class SelectEliteFn<GenomeT> extends Select.SelectFn<GenomeT> {
+public class SelectEliteFn<GenomeT extends Serializable> extends Select.SelectFn<GenomeT> {
     private static final Logger logger = LoggerFactory.getLogger(SelectEliteFn.class);
 
     @ProcessElement

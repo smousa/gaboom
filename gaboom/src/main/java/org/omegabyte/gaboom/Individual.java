@@ -2,9 +2,10 @@ package org.omegabyte.gaboom;
 
 import org.apache.commons.text.RandomStringGenerator;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public class Individual<GenomeT> {
+public class Individual<GenomeT extends Serializable> implements Serializable {
     private final String id;
     private final GenomeT genome;
     private Double fitness = null;

@@ -11,6 +11,7 @@ import org.omegabyte.gaboom.CrossoverIndividuals;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.Random;
 
 public class Crossover {
 
-    public abstract static class CrossoverFn<GenomeT> extends DoFn<KV<String, CrossoverIndividuals<GenomeT>>, KV<String, Individuals<GenomeT>>> {
+    public abstract static class CrossoverFn<GenomeT extends Serializable> extends DoFn<KV<String, CrossoverIndividuals<GenomeT>>, KV<String, Individuals<GenomeT>>> {
         private double crossRate = 0;
 
         public void setCrossRate(double crossRate) {
@@ -46,7 +47,7 @@ public class Crossover {
         }
     }
 
-    public static class CrossoverTransform<GenomeT> extends PTransform<PCollection<KV<String, CrossoverIndividuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
+    public static class CrossoverTransform<GenomeT extends Serializable> extends PTransform<PCollection<KV<String, CrossoverIndividuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
         private final CrossoverFn<GenomeT> fn;
         private final List<PCollectionView<?>> sideInputs;
 
@@ -76,7 +77,7 @@ public class Crossover {
         }
     }
 
-    public static <GenomeT> CrossoverTransform<GenomeT> as(CrossoverFn<GenomeT> fn) {
+    public static <GenomeT extends Serializable> CrossoverTransform<GenomeT> as(CrossoverFn<GenomeT> fn) {
         return new CrossoverTransform<>(fn, Collections.emptyList());
     }
 }

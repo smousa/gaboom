@@ -10,6 +10,7 @@ import org.apache.beam.sdk.values.PCollectionView;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.Random;
 
 public class Mutate {
 
-    public abstract static class MutateFn<GenomeT> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, Individuals<GenomeT>>> {
+    public abstract static class MutateFn<GenomeT extends Serializable> extends DoFn<KV<String, Individuals<GenomeT>>, KV<String, Individuals<GenomeT>>> {
         private double mutRate = 0;
 
         public void setMutRate(double mutRate) {
@@ -44,7 +45,7 @@ public class Mutate {
         }
     }
 
-    public static class MutateTransform<GenomeT> extends PTransform<PCollection<KV<String, Individuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
+    public static class MutateTransform<GenomeT extends Serializable> extends PTransform<PCollection<KV<String, Individuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
         private final MutateFn<GenomeT> fn;
         private final List<PCollectionView<?>> sideInputs;
 
@@ -74,7 +75,7 @@ public class Mutate {
         }
     }
 
-    public static <GenomeT> MutateTransform<GenomeT> as(MutateFn<GenomeT> fn) {
+    public static <GenomeT extends Serializable> MutateTransform<GenomeT> as(MutateFn<GenomeT> fn) {
         return new MutateTransform<>(fn, Collections.emptyList());
     }
 }

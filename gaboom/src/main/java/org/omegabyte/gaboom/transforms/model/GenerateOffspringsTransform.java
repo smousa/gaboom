@@ -17,11 +17,12 @@ import org.omegabyte.gaboom.transforms.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class GenerateOffspringsTransform<GenomeT> extends PTransform<PCollection<KV<String, SelectIndividuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
+public class GenerateOffspringsTransform<GenomeT extends Serializable> extends PTransform<PCollection<KV<String, SelectIndividuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
     private final Select.SelectNoIndexTransform<GenomeT> selectTransform;
     private final Crossover.CrossoverTransform<GenomeT> crossoverTransform;
     private final Mutate.MutateTransform<GenomeT> mutateTransform;
@@ -32,7 +33,7 @@ public class GenerateOffspringsTransform<GenomeT> extends PTransform<PCollection
         this.mutateTransform = mutateTransform;
     }
 
-    static class SelectParentsFn<GenomeT> extends DoFn<KV<String, SelectIndividuals<GenomeT>>, KV<String, SelectIndividuals<GenomeT>>> {
+    static class SelectParentsFn<GenomeT extends Serializable> extends DoFn<KV<String, SelectIndividuals<GenomeT>>, KV<String, SelectIndividuals<GenomeT>>> {
         private final TupleTag<KV<String, NBaseItem>> nBaseItemIndexTupleTag;
 
         public SelectParentsFn(TupleTag<KV<String, NBaseItem>> nBaseItemIndexTupleTag) {
@@ -52,7 +53,7 @@ public class GenerateOffspringsTransform<GenomeT> extends PTransform<PCollection
         }
     }
 
-    static class GenerateOffspringsFn<GenomeT> extends DoFn<KV<String, CoGbkResult>, KV<String, Individuals<GenomeT>>> {
+    static class GenerateOffspringsFn<GenomeT extends Serializable> extends DoFn<KV<String, CoGbkResult>, KV<String, Individuals<GenomeT>>> {
         private static final Logger logger = LoggerFactory.getLogger(GenerateOffspringsFn.class);
 
         private final TupleTag<NBaseItem> nBaseItemTupleTag;

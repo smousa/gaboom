@@ -3,10 +3,11 @@ package org.omegabyte.gaboom.transforms.halloffame;
 import org.apache.beam.sdk.transforms.Combine;
 import org.omegabyte.gaboom.Individual;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HallOfFameFn<GenomeT> extends Combine.CombineFn<List<Individual<GenomeT>>, List<Individual<GenomeT>>, List<Individual<GenomeT>>> {
+public class HallOfFameFn<GenomeT extends Serializable> extends Combine.CombineFn<List<Individual<GenomeT>>, List<Individual<GenomeT>>, List<Individual<GenomeT>>> {
     final private int nBest;
 
     public HallOfFameFn(int nBest) {

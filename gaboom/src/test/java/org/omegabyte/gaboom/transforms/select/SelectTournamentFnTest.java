@@ -3,9 +3,8 @@ package org.omegabyte.gaboom.transforms.select;
 import org.apache.beam.sdk.transforms.DoFnTester;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.TupleTag;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.SelectIndividuals;
@@ -13,17 +12,17 @@ import org.omegabyte.gaboom.SelectIndividuals;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
-class SelectTournamentFnTest {
+public class SelectTournamentFnTest {
     private List<Individual<Integer>> individualsList;
 
     public static Individual[] arrayOfIndividuals(Individual ...individuals) {
         return individuals;
     }
 
-    @BeforeEach
+    @Before
     public void initEach() {
         individualsList = new ArrayList<>();
 
@@ -49,7 +48,7 @@ class SelectTournamentFnTest {
     }
 
     @Test
-    @DisplayName("It should select n individuals")
+    //@DisplayName("It should select n individuals")
     public void testProcessElement() throws Exception {
         TupleTag<KV<String, List<Integer>>> selectedIndexesTT = new TupleTag<>();
         SelectTournamentFn<Integer> selectTournamentFn = new SelectTournamentFn<>(3);
@@ -72,7 +71,7 @@ class SelectTournamentFnTest {
     }
 
     @Test
-    @DisplayName("It should not return anything if there are not enough individuals")
+    //@DisplayName("It should not return anything if there are not enough individuals")
     public void testNotEnough() throws Exception {
         DoFnTester<KV<String, SelectIndividuals<Integer>>, KV<String, Individuals<Integer>>> fnTester = DoFnTester.of(new SelectTournamentFn<>(5));
         KV<String, SelectIndividuals<Integer>> testInput = KV.of("test", new SelectIndividuals<>(new Individuals<>(20, individualsList), 10));

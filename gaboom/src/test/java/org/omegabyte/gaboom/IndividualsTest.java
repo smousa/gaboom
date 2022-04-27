@@ -1,18 +1,17 @@
 package org.omegabyte.gaboom;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
-class IndividualsTest {
+public class IndividualsTest {
 
     @Test
-    @DisplayName("It should get individuals")
-    void testGetIndividuals() {
+    //@DisplayName("It should get individuals")
+    public void testGetIndividuals() {
         List<Individual<Integer>> individualList = new ArrayList<>();
         individualList.add(new Individual<>("p1", 1));
         individualList.add(new Individual<>("p1", 2));
@@ -22,8 +21,8 @@ class IndividualsTest {
     }
 
     @Test
-    @DisplayName("It should return an empty list of individuals")
-    void testGetEmptyIndividuals() {
+    //@DisplayName("It should return an empty list of individuals")
+    public void testGetEmptyIndividuals() {
         Individuals<Integer> individuals = new Individuals<>(0);
         assertEquals(0, individuals.getIndividuals().size());
     }
