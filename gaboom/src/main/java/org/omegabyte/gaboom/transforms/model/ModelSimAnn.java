@@ -1,5 +1,8 @@
 package org.omegabyte.gaboom.transforms.model;
 
+import org.apache.beam.sdk.coders.KvCoder;
+import org.apache.beam.sdk.coders.SerializableCoder;
+import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.join.CoGbkResult;
@@ -126,12 +129,12 @@ public class ModelSimAnn<GenomeT extends Serializable> extends ModelTransform<Ge
         return KeyedPCollectionTuple
                 .of(originalIndividualTT, result.get(originalIndividualAtIdTT))
                 .and(mutantTT, mutant)
-                .and(keyTT, result.get(keyAtIdTT))
+                .and(keyTT, result.get(keyAtIdTT).setCoder(KvCoder.of(StringUtf8Coder.of(), StringUtf8Coder.of())))
                 .apply(CoGroupByKey.create())
                 .apply(ParDo.of(new ModelSimAnnFn<>(originalIndividualTT, mutantTT, keyTT, t)))
 
                 // Get the new population and do it again
-                .apply(IndividualsFromIndividualTransform.of(result.get(baseItemAtKeyTT)))
+                .apply(IndividualsFromIndividualTransform.of(result.get(baseItemAtKeyTT).setCoder(KvCoder.of(StringUtf8Coder.of(), SerializableCoder.of(BaseItem.class)))))
                 .apply(ParDo.of(new SetMutantNameFn<>()))
                 .apply(new ModelSimAnn<>(mutateTransform, evaluateTransform, t*alpha, tmin, alpha));
     }
