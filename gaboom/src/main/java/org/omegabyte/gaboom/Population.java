@@ -1,5 +1,7 @@
 package org.omegabyte.gaboom;
 
+import org.apache.beam.sdk.util.SerializableUtils;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -34,5 +36,13 @@ public class Population<GenomeT extends Serializable> extends Individuals<Genome
         setSeed(individuals.getSeed());
         this.individuals = individuals.getIndividuals();
         this.generations++;
+    }
+
+    public boolean isNew() {
+        return generations < 0;
+    }
+
+    public Population<GenomeT> clone() {
+        return SerializableUtils.clone(this);
     }
 }

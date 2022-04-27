@@ -38,7 +38,8 @@ public class Mutate {
             individuals.getIndividuals().forEach(ind -> {
                 if (mutRate > 0 && rng.nextDouble() <= mutRate) {
                     String id = ind.getId() + '.' + IdGenerator.newId(rng, 3);
-                    outputIndividuals.getIndividuals().add(new Individual<>(id, mutate(c, rng, ind.getGenome())));
+                    GenomeT genome = mutate(c, rng, ind.getGenome());
+                    outputIndividuals.getIndividuals().add(new Individual<>(id, genome));
                 } else {
                     outputIndividuals.getIndividuals().add(ind);
                 }

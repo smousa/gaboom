@@ -52,8 +52,6 @@ public class ModelTest {
 
         @Override
         public String mutate(ProcessContext context, Random random, String genome) {
-            RandomStringGenerator gen = builder.usingRandom(random::nextInt).build();
-
             List<Integer> indices = new ArrayList<>();
             StringBuilder result = new StringBuilder();
             for (int i = 0; i < genome.length(); i++) {

@@ -62,9 +62,9 @@ public class ModelSteadyStateStrictTest {
             Individual<String> ind;
 
             ind = result.getValue().getIndividuals().get(0);
-            assertEquals("CCKEN2.Pux", ind.getId());
-            assertEquals("jhgveme", ind.getGenome());
-            assertEquals(23.0, ind.getFitness(), 0);
+            assertEquals("sE9ngG", ind.getId());
+            assertEquals("jdgylue", ind.getGenome());
+            assertEquals(31.0, ind.getFitness(), 0);
 
             ind = result.getValue().getIndividuals().get(1);
             assertEquals("YZMO9P", ind.getId());
@@ -77,9 +77,9 @@ public class ModelSteadyStateStrictTest {
             assertEquals(57.0, ind.getFitness(), 0);
 
             ind = result.getValue().getIndividuals().get(3);
-            assertEquals("sE9ngG", ind.getId());
-            assertEquals("jdgylue", ind.getGenome());
-            assertEquals(31.0, ind.getFitness(), 0);
+            assertEquals("etKcTf", ind.getId());
+            assertEquals("jdgylxk", ind.getGenome());
+            assertEquals(34.0, ind.getFitness(), 0);
 
             ind = result.getValue().getIndividuals().get(4);
             assertEquals("6hYkdm", ind.getId());

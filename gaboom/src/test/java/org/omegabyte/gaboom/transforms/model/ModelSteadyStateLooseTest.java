@@ -62,7 +62,7 @@ public class ModelSteadyStateLooseTest {
             Individual<String> ind;
 
             ind = result.getValue().getIndividuals().get(0);
-            assertEquals("QdYlyc", ind.getId());
+            assertEquals("etKcTf", ind.getId());
             assertEquals("jdgylxk", ind.getGenome());
             assertNull(ind.getFitness());
 
@@ -78,7 +78,7 @@ public class ModelSteadyStateLooseTest {
 
             ind = result.getValue().getIndividuals().get(3);
             assertEquals("CCKEN2.Pux", ind.getId());
-            assertEquals("jhgveme", ind.getGenome());
+            assertEquals("jhxyeme", ind.getGenome());
             assertNull(ind.getFitness());
 
             ind = result.getValue().getIndividuals().get(4);

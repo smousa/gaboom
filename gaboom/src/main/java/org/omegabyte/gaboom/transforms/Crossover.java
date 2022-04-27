@@ -38,8 +38,11 @@ public class Crossover {
 
             Individuals<GenomeT> offspring = new Individuals<>(rng.nextLong());
             if (crossRate > 0 && rng.nextDouble() <= crossRate) {
-                offspring.getIndividuals().add(new Individual<>(rng, crossover(c, rng, p1.getGenome(), p2.getGenome())));
-                offspring.getIndividuals().add(new Individual<>(rng, crossover(c, rng, p1.getGenome(), p2.getGenome())));
+                GenomeT o1 = crossover(c, rng, p1.getGenome(), p2.getGenome());
+                GenomeT o2 = crossover(c, rng, p1.getGenome(), p2.getGenome());
+
+                offspring.getIndividuals().add(new Individual<>(rng, o1));
+                offspring.getIndividuals().add(new Individual<>(rng, o2));
             } else {
                 offspring.getIndividuals().add(p1);
                 offspring.getIndividuals().add(p2);

@@ -21,7 +21,7 @@ import org.omegabyte.gaboom.transforms.Populate;
 
 import java.io.Serializable;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class ModelRingTest {
     private static final int seed = 0;
@@ -62,29 +62,29 @@ public class ModelRingTest {
             Individual<String> ind;
 
             ind = result.getValue().getIndividuals().get(0);
-            assertEquals("pEPWPD.RM7", ind.getId());
-            assertEquals("lnwegqfj", ind.getGenome());
-            assertEquals(54.0, ind.getFitness(), 0);
+            assertEquals("PiSiKy", ind.getId());
+            assertEquals("ljbepowf", ind.getGenome());
+            assertEquals(57.0, ind.getFitness(), 0);
 
             ind = result.getValue().getIndividuals().get(1);
-            assertEquals("KEN2cF", ind.getId());
-            assertEquals("ylzxgqft", ind.getGenome());
-            assertEquals(65.0, ind.getFitness(), 0);
-
-            ind = result.getValue().getIndividuals().get(2);
-            assertEquals("a6xkD7", ind.getId());
+            assertEquals("aohYfB", ind.getId());
             assertEquals("ltvypcwv", ind.getGenome());
             assertEquals(67.0, ind.getFitness(), 0);
 
-            ind = result.getValue().getIndividuals().get(3);
-            assertEquals("7hyFlX.D8E", ind.getId());
+            ind = result.getValue().getIndividuals().get(2);
+            assertEquals("3Ozvcy.D8E", ind.getId());
             assertEquals("vgnyhpdu", ind.getGenome());
             assertEquals(69.0, ind.getFitness(), 0);
 
+            ind = result.getValue().getIndividuals().get(3);
+            assertEquals("gGfOKN", ind.getId());
+            assertEquals("yluegqfl", ind.getGenome());
+            assertEquals(69.0, ind.getFitness(), 0);
+
             ind = result.getValue().getIndividuals().get(4);
-            assertEquals("0Vm7vO", ind.getId());
-            assertEquals("xvzxkgxt", ind.getGenome());
-            assertEquals(78.0, ind.getFitness(), 0);
+            assertEquals("GSnGWs", ind.getId());
+            assertEquals("xvzjkpdt", ind.getGenome());
+            assertEquals(75.0, ind.getFitness(), 0);
             return null;
         });
         pipeline.run();

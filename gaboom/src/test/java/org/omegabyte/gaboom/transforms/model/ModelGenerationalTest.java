@@ -62,23 +62,23 @@ public class ModelGenerationalTest {
             Individual<String> ind;
 
             ind = result.getValue().getIndividuals().get(0);
-            assertEquals("uB1POA.rbj", ind.getId());
+            assertEquals("gPSvWE.rbj", ind.getId());
             assertEquals("uvyychqlo", ind.getGenome());
             assertNull(ind.getFitness());
 
             ind = result.getValue().getIndividuals().get(1);
             assertEquals("zZL6j8.Xxm", ind.getId());
-            assertEquals("sgyfeaalg", ind.getGenome());
+            assertEquals("sgybeaalg", ind.getGenome());
             assertNull(ind.getFitness());
 
             ind = result.getValue().getIndividuals().get(2);
-            assertEquals("TF8mJ1", ind.getId());
+            assertEquals("Ir0L33", ind.getId());
             assertEquals("xxngxpsqs", ind.getGenome());
             assertNull(ind.getFitness());
 
             ind = result.getValue().getIndividuals().get(3);
             assertEquals("o40mN0", ind.getId());
-            assertEquals("xxkjhtspd", ind.getGenome());
+            assertEquals("zvkjhtdps", ind.getGenome());
             assertNull(ind.getFitness());
 
             ind = result.getValue().getIndividuals().get(4);

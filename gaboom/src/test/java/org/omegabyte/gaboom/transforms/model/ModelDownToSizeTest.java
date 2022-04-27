@@ -71,13 +71,13 @@ public class ModelDownToSizeTest {
             assertEquals((Double) 51.0, ind.getFitness());
 
             ind = result.getValue().getIndividuals().get(1);
-            assertEquals("l7V350.ePe", ind.getId());
-            assertEquals("pokjxsopc", ind.getGenome());
-            assertEquals((Double) 62.0, ind.getFitness());
+            assertEquals("MdXk0m", ind.getId());
+            assertEquals("powfxsoms", ind.getGenome());
+            assertEquals((Double) 65.0, ind.getFitness());
 
             ind = result.getValue().getIndividuals().get(2);
-            assertEquals("n6nDPq", ind.getId());
-            assertEquals("powfxsoms", ind.getGenome());
+            assertEquals("l7V350.ePe", ind.getId());
+            assertEquals("pokjxsomc", ind.getGenome());
             assertEquals((Double) 65.0, ind.getFitness());
 
             ind = result.getValue().getIndividuals().get(3);

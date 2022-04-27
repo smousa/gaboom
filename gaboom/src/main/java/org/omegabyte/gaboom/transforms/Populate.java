@@ -35,7 +35,8 @@ public class Populate {
 
             Individuals<GenomeT> individuals = new Individuals<>(rng.nextLong());
             for (int i = 0; i < popSize; i++) {
-                individuals.getIndividuals().add(new Individual<>(rng, makeGenome(c, rng)));
+                GenomeT genome = makeGenome(c, rng);
+                individuals.getIndividuals().add(new Individual<>(rng, genome));
             }
             c.output(individuals);
         }
