@@ -1,19 +1,21 @@
 package org.omegabyte.gaboom;
 
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.text.RandomStringGenerator;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
-public class Population<GenomeT> extends BaseItem {
+public class Population<GenomeT> extends Individuals<GenomeT> {
     private final String id;
     private final long created = new Date().getTime();
-    private List<Individual<GenomeT>> individuals;
     private int generations = -1;
 
-    public Population(long seed, String id) {
-        super(seed);
+    public Population(String id) {
+        super(0);
         this.id = id;
-        this.individuals = new ArrayList<>();
     }
 
     public String getId() {

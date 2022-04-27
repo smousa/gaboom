@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class Individuals<GenomeT> extends BaseItem {
-    private final List<Individual<GenomeT>> individuals;
+    protected List<Individual<GenomeT>> individuals;
 
     public Individuals(long seed) {
         super(seed);
