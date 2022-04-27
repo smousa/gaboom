@@ -10,7 +10,7 @@ import org.apache.beam.sdk.values.PCollectionView;
 import org.omegabyte.gaboom.CrossoverIndividuals;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
-import org.omegabyte.gaboom.transforms.model.IndividualsToCrossoverFn;
+import org.omegabyte.gaboom.transforms.crossover.IndividualsToCrossoverFn;
 
 import java.io.Serializable;
 import java.util.Arrays;

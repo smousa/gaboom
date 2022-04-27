@@ -1,4 +1,4 @@
-package org.omegabyte.gaboom.transforms.model;
+package org.omegabyte.gaboom.transforms.crossover;
 
 import org.apache.beam.sdk.transforms.DoFnTester;
 import org.apache.beam.sdk.values.KV;
@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.omegabyte.gaboom.CrossoverIndividuals;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
+import org.omegabyte.gaboom.transforms.crossover.IndividualsToCrossoverFn;
 
 import java.util.ArrayList;
 import java.util.List;
