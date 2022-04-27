@@ -12,6 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * SelectRouletteFn samples individuals through roulette wheel selection (also
+ * known as fitness proportionate selection).
+ * @param <GenomeT>
+ */
 public class SelectRouletteFn<GenomeT> extends Select.SelectFn<GenomeT> {
     private static final Logger logger = LoggerFactory.getLogger(SelectRouletteFn.class);
 

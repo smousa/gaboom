@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SelectEliteFn returns the best n individuals from the population.
+ * SelectEliteFn returns the n best individuals of a group.
  * @param <GenomeT>
  */
 public class SelectEliteFn<GenomeT> extends Select.SelectFn<GenomeT> {

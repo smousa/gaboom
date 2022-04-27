@@ -12,6 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * SelectTournamentFn samples individuas through tournament selection.  The
+ * tournament is composed of randomly chosen individuals.  The winner of the
+ * tournament is the chosen individual with the lowest fitness.  The obtained
+ * individuals are all distinct.
+ * @param <GenomeT>
+ */
 public class SelectTournamentFn<GenomeT> extends Select.SelectFn<GenomeT> {
     private static final Logger logger = LoggerFactory.getLogger(SelectTournamentFn.class);
 
