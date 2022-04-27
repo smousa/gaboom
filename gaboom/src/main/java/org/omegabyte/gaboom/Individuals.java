@@ -1,6 +1,7 @@
 package org.omegabyte.gaboom;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -9,7 +10,7 @@ public class Individuals<GenomeT extends Serializable> extends BaseItem  impleme
 
     public Individuals(long seed) {
         super(seed);
-        this.individuals = Collections.emptyList();
+        this.individuals = new ArrayList<>();
     }
 
     public Individuals(long seed, List<Individual<GenomeT>> individuals) {

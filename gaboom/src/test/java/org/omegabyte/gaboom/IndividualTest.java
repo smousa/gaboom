@@ -24,7 +24,7 @@ public class IndividualTest {
         Random r = new Random();
         r.setSeed(0);
         Individual<String> individual = new Individual<>(r, "test");
-        assertEquals("SSXVNJ", individual.getId());
+        assertEquals("22Pbd7", individual.getId());
         assertEquals("test", individual.getGenome());
         assertNull(individual.getFitness());
     }

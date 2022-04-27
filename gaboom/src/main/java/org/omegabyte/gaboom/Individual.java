@@ -1,6 +1,7 @@
 package org.omegabyte.gaboom;
 
 import org.apache.commons.text.RandomStringGenerator;
+import org.omegabyte.gaboom.utils.IdGenerator;
 
 import java.io.Serializable;
 import java.util.Random;
@@ -16,13 +17,7 @@ public class Individual<GenomeT extends Serializable> implements Serializable {
     }
 
     public Individual(Random random, GenomeT genome) {
-        RandomStringGenerator rsg = new RandomStringGenerator.Builder()
-                .withinRange('0', '9')
-                .withinRange('a', 'z')
-                .withinRange('A', 'Z')
-                .usingRandom(random::nextInt)
-                .build();
-        this.id = rsg.generate(6);
+        this.id = IdGenerator.newId(random, 6);
         this.genome = genome;
     }
 

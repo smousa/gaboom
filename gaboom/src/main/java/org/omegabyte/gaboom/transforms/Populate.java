@@ -33,7 +33,7 @@ public class Populate {
             BaseItem baseItem = c.element();
             Random rng = baseItem.getRandomGenerator();
 
-            Individuals<GenomeT> individuals = new Individuals<>(baseItem.getSeed());
+            Individuals<GenomeT> individuals = new Individuals<>(rng.nextLong());
             for (int i = 0; i < popSize; i++) {
                 individuals.getIndividuals().add(new Individual<>(rng, makeGenome(c, rng)));
             }
