@@ -21,10 +21,9 @@ import org.omegabyte.gaboom.transforms.select.SelectTournamentFn;
 
 import java.io.Serializable;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
-public class ModelMutateLooseTest {
+public class ModelMutateStrictTest {
     private static final int seed = 0;
     private PCollection<KV<String, Individuals<String>>> input;
 
@@ -48,10 +47,11 @@ public class ModelMutateLooseTest {
     }
 
     @Test
-    public void testModelMutateLoose() {
-        PCollection<KV<String, Individuals<String>>> output = input.apply(new ModelMutateLoose<>(
+    public void testModelMutateStrict() {
+        PCollection<KV<String, Individuals<String>>> output = input.apply(new ModelMutateStrict<>(
                 new SelectTournamentFn<>(2),
                 Mutate.as(new ModelTest.MutateFn(3)),
+                new ModelTest.FitnessTransform(),
                 2));
         PAssert.that(output).satisfies((SerializableFunction<Iterable<KV<String, Individuals<String>>>, Void>) kvs -> {
             KV<String, Individuals<String>> result = kvs.iterator().next();
@@ -61,9 +61,9 @@ public class ModelMutateLooseTest {
             Individual<String> ind;
 
             ind = result.getValue().getIndividuals().get(0);
-            assertEquals("O9PiSi.Xiw", ind.getId());
-            assertEquals("pvocfljbcpo", ind.getGenome());
-            assertNull(ind.getFitness());
+            assertEquals("1r5rgf.yc4", ind.getId());
+            assertEquals("farhfopmfoj", ind.getGenome());
+            assertEquals(87.0, ind.getFitness(), 0);
 
             ind = result.getValue().getIndividuals().get(1);
             assertEquals("QsE9ng", ind.getId());
@@ -76,9 +76,9 @@ public class ModelMutateLooseTest {
             assertEquals(112.0, ind.getFitness(), 0);
 
             ind = result.getValue().getIndividuals().get(3);
-            assertEquals("1r5rgf.yc4", ind.getId());
-            assertEquals("farhfopmfoj", ind.getGenome());
-            assertNull(ind.getFitness());
+            assertEquals("O9PiSi", ind.getId());
+            assertEquals("qlocfljbepo", ind.getGenome());
+            assertEquals(88.0, ind.getFitness(), 0);
 
             ind = result.getValue().getIndividuals().get(4);
             assertEquals("8Ry8RZ", ind.getId());
@@ -87,5 +87,6 @@ public class ModelMutateLooseTest {
             return null;
         });
         pipeline.run();
+
     }
 }
