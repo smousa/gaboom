@@ -5,12 +5,15 @@ import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.SelectIndividuals;
 import org.omegabyte.gaboom.transforms.Select;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class SelectRouletteFn<GenomeT> extends Select.SelectFn<GenomeT> {
+    private static final Logger logger = LoggerFactory.getLogger(SelectRouletteFn.class);
 
     private List<Double> getWheel(List<Individual<GenomeT>> individuals) {
         int n = individuals.size();
@@ -34,7 +37,7 @@ public class SelectRouletteFn<GenomeT> extends Select.SelectFn<GenomeT> {
         List<Double> summed = new ArrayList<>();
         summed.add(doubles.get(0));
         for (int i = 1; i < doubles.size(); i++) {
-            summed.add(doubles.get(i) - doubles.get(i-1));
+            summed.add(doubles.get(i) + summed.get(i-1));
         }
         return summed;
     }
@@ -43,26 +46,28 @@ public class SelectRouletteFn<GenomeT> extends Select.SelectFn<GenomeT> {
     public void processElement(ProcessContext c) {
         String key = c.element().getKey();
         SelectIndividuals<GenomeT> selectIndividuals = c.element().getValue();
-        Random rng = selectIndividuals.getRandomGenerator();
 
+        if (selectIndividuals.getIndividuals().size() == 0) {
+            logger.error("Select individuals is 0, key={}", key);
+            return;
+        }
+
+        Random rng = selectIndividuals.getRandomGenerator();
         List<Integer> indices = new ArrayList<>();
-        Individuals<GenomeT> individuals = new Individuals<>(rng.nextLong());
+        List<Individual<GenomeT>> individuals = new ArrayList<>();
+
         List<Double> wheel = getWheel(selectIndividuals.getIndividuals());
         for (int i = 0; i < selectIndividuals.getN(); i++) {
             double value = rng.nextDouble();
-            for (int j = 1; j < wheel.size(); j++) {
-                if (value >= wheel.get(j)) {
+            for (int j = 0; j < wheel.size(); j++) {
+                if (value < wheel.get(j)) {
                     indices.add(j);
-                    individuals.getIndividuals().add(selectIndividuals.getIndividuals().get(j));
+                    individuals.add(selectIndividuals.getIndividuals().get(j));
                     break;
                 }
             }
-            if (individuals.getIndividuals().size() < i) {
-                indices.add(0);
-                individuals.getIndividuals().add(selectIndividuals.getIndividuals().get(0));
-            }
         }
         c.output(selectIndicesTupleTag, KV.of(key, indices));
-        c.output(KV.of(key, individuals));
+        c.output(KV.of(key, new Individuals<>(rng.nextLong(), individuals)));
     }
 }

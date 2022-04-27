@@ -11,13 +11,18 @@ import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.SelectIndividuals;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class SelectEliteFnTest {
+class SelectRouletteFnTest {
     private List<Individual<Integer>> individualsList;
+
+    public static Individual[] arrayOfIndividuals(Individual ...individuals) {
+        return individuals;
+    }
 
     @BeforeEach
     public void initEach() {
@@ -39,37 +44,34 @@ class SelectEliteFnTest {
     }
 
     @Test
-    @DisplayName("It should return the first n individuals and their indices from the input")
+    @DisplayName("It should select n Individuals")
     public void testProcessElement() throws Exception {
         TupleTag<KV<String, List<Integer>>> selectedIndexesTT = new TupleTag<>();
-        SelectEliteFn<Integer> selectEliteFn = new SelectEliteFn<>();
-        selectEliteFn.setSelectIndicesTupleTag(selectedIndexesTT);
-        DoFnTester<KV<String, SelectIndividuals<Integer>>, KV<String, Individuals<Integer>>> fnTester = DoFnTester.of(selectEliteFn);
+        SelectRouletteFn<Integer> selectRouletteFn = new SelectRouletteFn<>();
+        selectRouletteFn.setSelectIndicesTupleTag(selectedIndexesTT);
+        DoFnTester<KV<String, SelectIndividuals<Integer>>, KV<String, Individuals<Integer>>> fnTester = DoFnTester.of(selectRouletteFn);
 
         KV<String, SelectIndividuals<Integer>> testInput = KV.of("test", new SelectIndividuals<>(new Individuals<>(20, individualsList), 2));
         List<KV<String, Individuals<Integer>>> result = fnTester.processBundle(testInput);
         assert result.size() == 1;
         assertEquals("test", result.get(0).getKey());
-
         Individuals<Integer> individuals = result.get(0).getValue();
-        assertEquals(20, individuals.getSeed());
-        assertArrayEquals(individualsList.subList(0, 2).toArray(), individuals.getIndividuals().toArray());
+        assertEquals(-3802826258271402066L, individuals.getSeed());
+        assertArrayEquals(arrayOfIndividuals(individualsList.get(2), individualsList.get(0)), individuals.getIndividuals().toArray());
 
         List<KV<String, List<Integer>>> resultIndices = fnTester.takeOutputElements(selectedIndexesTT);
         assert resultIndices.size() == 1;
         assertEquals("test", resultIndices.get(0).getKey());
-
-        List<Integer> indexes = resultIndices.get(0).getValue();
-        assertArrayEquals(new Integer[]{0, 1}, indexes.toArray());
+        List<Integer> indices = resultIndices.get(0).getValue();
+        assertArrayEquals(new Integer[]{2,0}, indices.toArray());
     }
 
     @Test
-    @DisplayName("It should not return anything if n is larger than the number of provided individuals")
-    public void testNTooBig() throws Exception {
-        DoFnTester<KV<String, SelectIndividuals<Integer>>, KV<String, Individuals<Integer>>> fnTester = DoFnTester.of(new SelectEliteFn<>());
+    @DisplayName("It should not return anything if there are no individuals to choose from")
+    public void testNoIndividuals() throws Exception {
+        DoFnTester<KV<String, SelectIndividuals<Integer>>, KV<String, Individuals<Integer>>> fnTester = DoFnTester.of(new SelectRouletteFn<>());
 
-        KV<String, SelectIndividuals<Integer>> testInput = KV.of("test", new SelectIndividuals<>(new Individuals<>(20, individualsList), 10));
-        List<KV<String, Individuals<Integer>>> result = fnTester.processBundle(testInput);
-        assert result.isEmpty();
+        KV<String, SelectIndividuals<Integer>> testInput = KV.of("test", new SelectIndividuals<Integer>(new Individuals<>(20), 10));
+        assert fnTester.processBundle(testInput).isEmpty();
     }
 }
