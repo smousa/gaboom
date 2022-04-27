@@ -21,9 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class GenerateOffspringsTransform<GenomeT extends Serializable> extends PTransform<PCollection<KV<String, SelectIndividuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
     private final Select.SelectNoIndexTransform<GenomeT> selectTransform;
@@ -79,6 +77,7 @@ public class GenerateOffspringsTransform<GenomeT extends Serializable> extends P
             NBaseItem nBaseItem = result.getOnly(nBaseItemTupleTag);
             List<Individual<GenomeT>> individualList = new ArrayList<>();
             result.getAll(individualsTupleTag).forEach(individuals -> individualList.addAll(individuals.getIndividuals()));
+            Collections.sort(individualList, Comparator.comparing(Individual::getId));
 
             if (individualList.size() < nBaseItem.getN()) {
                 logger.error("Not enough individuals to populate, id={}", key);

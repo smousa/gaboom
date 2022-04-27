@@ -81,19 +81,19 @@ public class GenerateOffspringsTransformTest {
             Individual<String> ind;
 
             ind = result.getValue().getIndividuals().get(0);
-            assertEquals("mjMdXk", ind.getId());
-            assertEquals("stvyhcwv", ind.getGenome());
-            assertNull(ind.getFitness());
-
-            ind = result.getValue().getIndividuals().get(1);
             assertEquals("0ml7V3", ind.getId());
             assertEquals("xvvjhpwv", ind.getGenome());
             assertNull(ind.getFitness());
 
-            ind = result.getValue().getIndividuals().get(2);
+            ind = result.getValue().getIndividuals().get(1);
             assertEquals("IzyfWT", ind.getId());
             assertEquals("onjvxzxz", ind.getGenome());
             assertEquals((Double) 58.0, ind.getFitness());
+
+            ind = result.getValue().getIndividuals().get(2);
+            assertEquals("hLr8Ry", ind.getId());
+            assertEquals("xvnjhpdq", ind.getGenome());
+            assertEquals((Double) 68.0, ind.getFitness());
             return null;
         });
         pipeline.run();

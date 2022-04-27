@@ -62,28 +62,28 @@ public class ModelGenerationalTest {
             Individual<String> ind;
 
             ind = result.getValue().getIndividuals().get(0);
-            assertEquals("gPSvWE.rbj", ind.getId());
-            assertEquals("uvyychqlo", ind.getGenome());
-            assertNull(ind.getFitness());
-
-            ind = result.getValue().getIndividuals().get(1);
-            assertEquals("zZL6j8.Xxm", ind.getId());
-            assertEquals("sgybeaalg", ind.getGenome());
-            assertNull(ind.getFitness());
-
-            ind = result.getValue().getIndividuals().get(2);
             assertEquals("Ir0L33", ind.getId());
             assertEquals("xxngxpsqs", ind.getGenome());
             assertNull(ind.getFitness());
 
+            ind = result.getValue().getIndividuals().get(1);
+            assertEquals("KNrHVY.ASk", ind.getId());
+            assertEquals("edtflaqlo", ind.getGenome());
+            assertNull(ind.getFitness());
+
+            ind = result.getValue().getIndividuals().get(2);
+            assertEquals("Lr8Ry8.Y0w", ind.getId());
+            assertEquals("uvnjvpkqd", ind.getGenome());
+            assertNull(ind.getFitness());
+
             ind = result.getValue().getIndividuals().get(3);
-            assertEquals("o40mN0", ind.getId());
-            assertEquals("zvkjhtdps", ind.getGenome());
+            assertEquals("gPSvWE.rbj", ind.getId());
+            assertEquals("uvyychqlo", ind.getGenome());
             assertNull(ind.getFitness());
 
             ind = result.getValue().getIndividuals().get(4);
-            assertEquals("Lr8Ry8.Y0w", ind.getId());
-            assertEquals("uvnjvpkqd", ind.getGenome());
+            assertEquals("o40mN0", ind.getId());
+            assertEquals("zvkjhtdps", ind.getGenome());
             assertNull(ind.getFitness());
             return null;
         });

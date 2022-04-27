@@ -21,7 +21,7 @@ import org.omegabyte.gaboom.transforms.Populate;
 
 import java.io.Serializable;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class ModelRingTest {
     private static final int seed = 0;

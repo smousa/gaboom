@@ -5,9 +5,14 @@ import org.omegabyte.gaboom.Individual;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class SortIndividualsFn<GenomeT extends Serializable> extends Combine.CombineFn<Individual<GenomeT>, List<Individual<GenomeT>>, List<Individual<GenomeT>>> {
+
+    public static <GenomeT extends Serializable> int compare(Individual<GenomeT> i1, Individual<GenomeT> i2) {
+        return Comparator.comparingDouble(Individual<GenomeT>::getFitness).thenComparing(Individual::getId).compare(i1, i2);
+    }
 
     @Override
     public List<Individual<GenomeT>> createAccumulator() {
@@ -16,12 +21,10 @@ public class SortIndividualsFn<GenomeT extends Serializable> extends Combine.Com
 
     @Override
     public List<Individual<GenomeT>> addInput(List<Individual<GenomeT>> accumulator, Individual<GenomeT> input) {
+
         for (int i = 0; i < accumulator.size(); i++) {
             Individual<GenomeT> individual = accumulator.get(i);
-            if (input.getFitness() < individual.getFitness()) {
-                accumulator.add(i, input);
-                return accumulator;
-            } else if (input.getFitness().compareTo(individual.getFitness()) == 0 && input.getId().compareTo(individual.getId()) < 0) {
+            if (compare(input, individual) < 0) {
                 accumulator.add(i, input);
                 return accumulator;
             }
@@ -41,10 +44,7 @@ public class SortIndividualsFn<GenomeT extends Serializable> extends Combine.Com
             while (resultIndex < result.size() && inputIndex < input.size()) {
                 Individual<GenomeT> resultIndividual = result.get(resultIndex);
                 Individual<GenomeT> inputIndividual = input.get(inputIndex);
-
-                if (resultIndividual.getFitness() < inputIndividual.getFitness()) {
-                    merged.add(result.get(resultIndex++));
-                } else if (resultIndividual.getFitness().compareTo(inputIndividual.getFitness()) == 0 && resultIndividual.getId().compareTo(inputIndividual.getId()) < 0) {
+                if (compare(resultIndividual, inputIndividual) < 0) {
                     merged.add(result.get(resultIndex++));
                 } else {
                     merged.add(input.get(inputIndex++));

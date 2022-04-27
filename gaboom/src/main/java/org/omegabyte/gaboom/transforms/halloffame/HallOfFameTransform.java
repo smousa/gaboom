@@ -21,8 +21,8 @@ public class HallOfFameTransform<GenomeT extends Serializable> extends PTransfor
 
     @Override
     public PCollection<List<Individual<GenomeT>>> expand(PCollection<List<Individual<GenomeT>>> input) {
-        return PCollectionList.of(hallOfFamePCollection)
-                .and(input)
+        return PCollectionList.of(input)
+                .and(hallOfFamePCollection)
                 .apply(Flatten.pCollections())
                 .apply(Combine.globally(new HallOfFameFn<>(nBest)));
     }

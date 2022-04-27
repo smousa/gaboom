@@ -16,7 +16,6 @@ import org.omegabyte.gaboom.transforms.Populate;
 import org.omegabyte.gaboom.transforms.model.ModelGenerational;
 import org.omegabyte.gaboom.transforms.model.ModelTest;
 import org.omegabyte.gaboom.transforms.model.ModelTransform;
-import org.omegabyte.gaboom.transforms.select.SelectEliteFn;
 import org.omegabyte.gaboom.transforms.select.SelectTournamentFn;
 
 import java.util.HashMap;
@@ -150,6 +149,7 @@ public class GATest {
             assertEquals(numPops, populationMap.size());
 
             Population<String> population;
+            Individual<String> individual;
 
             assertTrue(populationMap.containsKey("JHg"));
             population = populationMap.get("JHg");

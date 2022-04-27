@@ -2,6 +2,7 @@ package org.omegabyte.gaboom.transforms.halloffame;
 
 import org.apache.beam.sdk.transforms.Combine;
 import org.omegabyte.gaboom.Individual;
+import org.omegabyte.gaboom.transforms.evaluate.SortIndividualsFn;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class HallOfFameFn<GenomeT extends Serializable> extends Combine.CombineF
         int bIndex = 0;
 
         while (result.size()< nBest && aIndex < a.size() && bIndex < b.size()) {
-            if (a.get(aIndex).getFitness() < b.get(bIndex).getFitness()) {
+            if (SortIndividualsFn.compare(a.get(aIndex), b.get(bIndex)) < 0) {
                 result.add(a.get(aIndex++));
             } else {
                 result.add(b.get(bIndex++));
