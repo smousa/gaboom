@@ -1,7 +1,9 @@
 package org.omegabyte.gaboom.transforms;
 
-import org.apache.beam.sdk.coders.DefaultCoder;
-import org.apache.beam.sdk.coders.SerializableCoder;
+import org.apache.beam.sdk.coders.BigEndianIntegerCoder;
+import org.apache.beam.sdk.coders.KvCoder;
+import org.apache.beam.sdk.coders.ListCoder;
+import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.ParDo;
@@ -9,8 +11,6 @@ import org.apache.beam.sdk.util.SerializableUtils;
 import org.apache.beam.sdk.values.*;
 import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.SelectIndividuals;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.List;
@@ -28,8 +28,7 @@ public class Select {
      * passed to the SelectFn.
      * @param <GenomeT>
      */
-    @DefaultCoder(SerializableCoder.class)
-    public static abstract class SelectFn<GenomeT extends Serializable> extends DoFn<KV<String, SelectIndividuals<GenomeT>>, KV<String, Individuals<GenomeT>>> implements Serializable{
+    public static abstract class SelectFn<GenomeT extends Serializable> extends DoFn<KV<String, SelectIndividuals<GenomeT>>, KV<String, Individuals<GenomeT>>>{
         protected TupleTag<KV<String, List<Integer>>> selectIndicesTupleTag = new TupleTag<>();
 
         public void setSelectIndicesTupleTag(TupleTag<KV<String, List<Integer>>> selectIndicesTupleTag) {
@@ -43,21 +42,17 @@ public class Select {
      * @param <GenomeT>
      */
     public static class SelectNoIndexTransform<GenomeT extends Serializable> extends PTransform<PCollection<KV<String, SelectIndividuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>>{
-        private static final Logger logger = LoggerFactory.getLogger(SelectNoIndexTransform.class);
-
         private final TupleTag<KV<String, List<Integer>>> selectIndicesTupleTag = new TupleTag<>();
         private final TupleTag<KV<String, Individuals<GenomeT>>> selectIndividualsTupleTag = new TupleTag<>();
-        private final SelectFn<GenomeT> fn;
+        private final SelectIndexTransform<GenomeT> selectIndexTransform;
 
         public SelectNoIndexTransform(SelectFn<GenomeT> fn) {
-            this.fn = SerializableUtils.clone(fn);
-            this.fn.selectIndicesTupleTag = selectIndicesTupleTag;
+            this.selectIndexTransform = new SelectIndexTransform<>(selectIndicesTupleTag, selectIndividualsTupleTag, fn);
         }
 
         @Override
         public PCollection<KV<String, Individuals<GenomeT>>> expand(PCollection<KV<String, SelectIndividuals<GenomeT>>> input) {
-            return input.apply(ParDo.of(fn).withOutputTags(selectIndividualsTupleTag, TupleTagList.of(selectIndicesTupleTag)))
-                    .get(selectIndividualsTupleTag);
+            return input.apply(selectIndexTransform).get(selectIndividualsTupleTag);
         }
     }
 
@@ -80,7 +75,9 @@ public class Select {
 
         @Override
         public PCollectionTuple expand(PCollection<KV<String, SelectIndividuals<GenomeT>>> input) {
-            return input.apply(ParDo.of(fn).withOutputTags(selectIndividualsTupleTag, TupleTagList.of(selectIndicesTupleTag)));
+            PCollectionTuple output = input.apply(ParDo.of(fn).withOutputTags(selectIndividualsTupleTag, TupleTagList.of(selectIndicesTupleTag)));
+            output.get(selectIndicesTupleTag).setCoder(KvCoder.of(StringUtf8Coder.of(), ListCoder.of(BigEndianIntegerCoder.of())));
+            return output;
         }
     }
 
