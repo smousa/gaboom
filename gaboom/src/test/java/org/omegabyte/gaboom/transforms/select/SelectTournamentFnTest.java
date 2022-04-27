@@ -61,13 +61,13 @@ public class SelectTournamentFnTest {
         assertEquals("test", result.get(0).getKey());
         Individuals<Integer> individuals = result.get(0).getValue();
         assertEquals(-8292973307042192125L, individuals.getSeed());
-        assertArrayEquals(arrayOfIndividuals(individualsList.get(0), individualsList.get(3)), individuals.getIndividuals().toArray());
+        assertArrayEquals(arrayOfIndividuals(individualsList.get(0), individualsList.get(1)), individuals.getIndividuals().toArray());
 
         List<KV<String, List<Integer>>> resultIndices = fnTester.takeOutputElements(selectedIndexesTT);
         assert  resultIndices.size() == 1;
         assertEquals("test", resultIndices.get(0).getKey());
         List<Integer> indices = resultIndices.get(0).getValue();
-        assertArrayEquals(new Integer[]{0,3}, indices.toArray());
+        assertArrayEquals(new Integer[]{0,1}, indices.toArray());
     }
 
     @Test

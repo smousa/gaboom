@@ -6,6 +6,7 @@ import org.omegabyte.gaboom.Individual;
 
 import java.util.*;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -47,6 +48,28 @@ public class SortIndividualsFnTest {
     }
 
     @Test
+    public void testAddInputSameWithSameFitness() {
+        SortIndividualsFn<Integer> combineFn = new SortIndividualsFn<>();
+
+        Individual<Integer> a = new Individual<Integer>("a", 1234);
+        a.setFitness(1.0);
+        Individual<Integer> b = new Individual<Integer>("b", 2345);
+        b.setFitness(1.0);
+
+        List<Individual<Integer>> actual;
+
+        actual = new ArrayList<>();
+        actual = combineFn.addInput(actual, a);
+        actual = combineFn.addInput(actual, b);
+        assertEquals(Arrays.asList(a, b), actual);
+
+        actual = new ArrayList<>();
+        actual = combineFn.addInput(actual, b);
+        actual = combineFn.addInput(actual, a);
+        assertEquals(Arrays.asList(a, b), actual);
+    }
+
+    @Test
     public void testMergeAccumulators() {
         SortIndividualsFn<Integer> combineFn = new SortIndividualsFn<>();
 
@@ -73,6 +96,23 @@ public class SortIndividualsFnTest {
             assertTrue(previous <= ind.getFitness());
             previous = ind.getFitness();
         }
+    }
+
+    @Test
+    public void testMergeAccumulatorsWithSameFitness() {
+        SortIndividualsFn<Integer> combineFn = new SortIndividualsFn<>();
+
+        Individual<Integer> a = new Individual<Integer>("a", 1234);
+        a.setFitness(1.0);
+        Individual<Integer> b = new Individual<Integer>("b", 2345);
+        b.setFitness(1.0);
+
+        List<Individual<Integer>> actual;
+
+        actual = combineFn.mergeAccumulators(Arrays.asList(Arrays.asList(a), Arrays.asList(b)));
+        assertEquals(Arrays.asList(a, b), actual);
+        actual = combineFn.mergeAccumulators(Arrays.asList(Arrays.asList(b), Arrays.asList(a)));
+        assertEquals(Arrays.asList(a, b), actual);
     }
 
     @Test

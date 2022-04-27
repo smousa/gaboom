@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.util.Random;
 
 public class Individual<GenomeT extends Serializable> implements Serializable {
+    public static final int ID_LENGTH = 6;
+
     private final String id;
     private final GenomeT genome;
     private Double fitness = null;
@@ -16,7 +18,7 @@ public class Individual<GenomeT extends Serializable> implements Serializable {
     }
 
     public Individual(Random random, GenomeT genome) {
-        this.id = IdGenerator.newId(random, 6);
+        this.id = IdGenerator.newId(random, ID_LENGTH);
         this.genome = genome;
     }
 

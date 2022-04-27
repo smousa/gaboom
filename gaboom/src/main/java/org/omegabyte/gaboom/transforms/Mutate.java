@@ -9,6 +9,7 @@ import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionView;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
+import org.omegabyte.gaboom.utils.IdGenerator;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -36,7 +37,8 @@ public class Mutate {
             Individuals<GenomeT> outputIndividuals = new Individuals<>(rng.nextLong());
             individuals.getIndividuals().forEach(ind -> {
                 if (mutRate > 0 && rng.nextDouble() <= mutRate) {
-                    outputIndividuals.getIndividuals().add(new Individual<>(ind.getId(), mutate(c, rng, ind.getGenome())));
+                    String id = ind.getId() + '.' + IdGenerator.newId(rng, 3);
+                    outputIndividuals.getIndividuals().add(new Individual<>(id, mutate(c, rng, ind.getGenome())));
                 } else {
                     outputIndividuals.getIndividuals().add(ind);
                 }

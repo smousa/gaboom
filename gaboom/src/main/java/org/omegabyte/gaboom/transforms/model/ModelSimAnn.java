@@ -132,6 +132,7 @@ public class ModelSimAnn<GenomeT extends Serializable> extends ModelTransform<Ge
 
                 // Get the new population and do it again
                 .apply(IndividualsFromIndividualTransform.of(result.get(baseItemAtKeyTT)))
+                .apply(ParDo.of(new SetMutantNameFn<>()))
                 .apply(new ModelSimAnn<>(mutateTransform, evaluateTransform, t*alpha, tmin, alpha));
     }
 }

@@ -15,6 +15,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.omegabyte.gaboom.Individual.ID_LENGTH;
+
 public class ModelMutateStrict<GenomeT extends Serializable> extends ModelTransform<GenomeT> {
     private final Select.SelectFn<GenomeT> selectFn;
     private final Mutate.MutateTransform<GenomeT> mutateTransform;
@@ -37,9 +39,10 @@ public class ModelMutateStrict<GenomeT extends Serializable> extends ModelTransf
             List<Individual<GenomeT>> individualList = new ArrayList<>();
             Set<String> ids = new HashSet<>();
             individuals.getIndividuals().forEach(ind -> {
-                if (!ids.contains(ind.getId())) {
+                String id = ind.getId().substring(0, ID_LENGTH);
+                if (!ids.contains(id)) {
                     individualList.add(ind);
-                    ids.add(ind.getId());
+                    ids.add(id);
                 }
             });
             c.output(KV.of(key, new Individuals<>(individuals.getSeed(), individualList)));

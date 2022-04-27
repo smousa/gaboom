@@ -82,12 +82,12 @@ public class GenerateOffspringsTransformTest {
 
             ind = result.getValue().getIndividuals().get(0);
             assertEquals("3n6nDP", ind.getId());
-            assertEquals("stvyxcwv", ind.getGenome());
+            assertEquals("stvyhcwv", ind.getGenome());
             assertNull(ind.getFitness());
 
             ind = result.getValue().getIndividuals().get(1);
             assertEquals("0ml7V3", ind.getId());
-            assertEquals("stvvxzwv", ind.getGenome());
+            assertEquals("stvjhpwv", ind.getGenome());
             assertNull(ind.getFitness());
 
             ind = result.getValue().getIndividuals().get(2);

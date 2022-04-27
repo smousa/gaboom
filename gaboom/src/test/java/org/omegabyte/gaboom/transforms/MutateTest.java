@@ -57,19 +57,19 @@ public class MutateTest {
 
         PCollection<KV<String, Individuals<Integer>>> population = pipeline
                 .apply(Create.of(KV.of("test", new Individuals<>(0, individualsList))))
-                .apply(Mutate.as(mutateFn).withMutRate(.5).withSideInputs(sideInput));
+                .apply(Mutate.as(mutateFn).withMutRate(.3).withSideInputs(sideInput));
         PAssert.that(population).satisfies((SerializableFunction<Iterable<KV<String, Individuals<Integer>>>, Void>) output -> {
             KV<String, Individuals<Integer>> result = output.iterator().next();
             assertEquals("test", result.getKey());
             assertEquals(-4962768465676381896L, result.getValue().getSeed());
 
-            assertEquals(individualsList.get(0).getId(), result.getValue().getIndividuals().get(0).getId());
+            assertEquals("a.d71", result.getValue().getIndividuals().get(0).getId());
             assertEquals(individualsList.get(0).getGenome() + 1, (int) result.getValue().getIndividuals().get(0).getGenome());
             assertNull(result.getValue().getIndividuals().get(0).getFitness());
 
-            assertEquals(individualsList.get(1).getId(), result.getValue().getIndividuals().get(1).getId());
-            assertEquals(individualsList.get(1).getGenome(), result.getValue().getIndividuals().get(1).getGenome());
-            assertEquals(individualsList.get(1).getFitness(), result.getValue().getIndividuals().get(1).getFitness());
+            assertEquals("b.KhL", result.getValue().getIndividuals().get(1).getId());
+            assertEquals(individualsList.get(1).getGenome() + 1, (int) result.getValue().getIndividuals().get(1).getGenome());
+            assertNull(result.getValue().getIndividuals().get(1).getFitness());
 
             assertEquals(individualsList.get(2).getId(), result.getValue().getIndividuals().get(2).getId());
             assertEquals(individualsList.get(2).getGenome(), result.getValue().getIndividuals().get(2).getGenome());

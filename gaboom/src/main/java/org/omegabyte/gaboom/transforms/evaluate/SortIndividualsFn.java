@@ -15,41 +15,50 @@ public class SortIndividualsFn<GenomeT extends Serializable> extends Combine.Com
     }
 
     @Override
-    public List<Individual<GenomeT>> addInput(List<Individual<GenomeT>> individuals, Individual<GenomeT> individual) {
-        for (int i = 0; i < individuals.size(); i++) {
-            if (individual.getFitness() < individuals.get(i).getFitness()) {
-                individuals.add(i, individual);
-                return individuals;
+    public List<Individual<GenomeT>> addInput(List<Individual<GenomeT>> accumulator, Individual<GenomeT> input) {
+        for (int i = 0; i < accumulator.size(); i++) {
+            Individual<GenomeT> individual = accumulator.get(i);
+            if (input.getFitness() < individual.getFitness()) {
+                accumulator.add(i, input);
+                return accumulator;
+            } else if (input.getFitness().compareTo(individual.getFitness()) == 0 && input.getId().compareTo(individual.getId()) < 0) {
+                accumulator.add(i, input);
+                return accumulator;
             }
         }
-        individuals.add(individual);
-        return individuals;
+        accumulator.add(input);
+        return accumulator;
     }
 
     @Override
     public List<Individual<GenomeT>> mergeAccumulators(Iterable<List<Individual<GenomeT>>> iterable) {
-        List<Individual<GenomeT>> current = new ArrayList<>();
-        for (List<Individual<GenomeT>> individuals : iterable) {
-            final List<Individual<GenomeT>> next = new ArrayList<>();
-            int currentIndex = 0;
-            int individualsIndex = 0;
+        List<Individual<GenomeT>> result = new ArrayList<>();
+        for (List<Individual<GenomeT>> input : iterable) {
+            List<Individual<GenomeT>> merged = new ArrayList<>();
+            int resultIndex = 0;
+            int inputIndex = 0;
 
-            while (currentIndex < current.size() && individualsIndex < individuals.size()) {
-                if (current.get(currentIndex).getFitness() < individuals.get(individualsIndex).getFitness()) {
-                    next.add(current.get(currentIndex++));
+            while (resultIndex < result.size() && inputIndex < input.size()) {
+                Individual<GenomeT> resultIndividual = result.get(resultIndex);
+                Individual<GenomeT> inputIndividual = input.get(inputIndex);
+
+                if (resultIndividual.getFitness() < inputIndividual.getFitness()) {
+                    merged.add(result.get(resultIndex++));
+                } else if (resultIndividual.getFitness().compareTo(inputIndividual.getFitness()) == 0 && resultIndividual.getId().compareTo(inputIndividual.getId()) < 0) {
+                    merged.add(result.get(resultIndex++));
                 } else {
-                    next.add(individuals.get(individualsIndex++));
+                    merged.add(input.get(inputIndex++));
                 }
             }
-            if (currentIndex < current.size()) {
-                next.addAll(current.subList(currentIndex, current.size()));
+
+            if (resultIndex < result.size()) {
+                merged.addAll(result.subList(resultIndex, result.size()));
+            } else if (inputIndex < input.size()) {
+                merged.addAll(input.subList(inputIndex, input.size()));
             }
-            if (individualsIndex < individuals.size()) {
-                next.addAll(individuals.subList(individualsIndex, individuals.size()));
-            }
-            current = next;
+            result = merged;
         }
-        return current;
+        return result;
     }
 
     @Override

@@ -63,7 +63,8 @@ public class ModelTest {
 
             for (int i = 0; i < mutations; i++) {
                 int index = indices.remove(random.nextInt(indices.size()));
-                result.setCharAt(index, gen.generate(1).charAt(0));
+                char c = (char) (random.nextInt(26) + 'a');
+                result.setCharAt(index, c);
             }
 
             return result.toString();

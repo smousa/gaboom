@@ -59,7 +59,6 @@ public class SelectTournamentFn<GenomeT extends Serializable> extends Select.Sel
             int value = options.remove(maxIndex);
             indices.add(value);
             individualList.add(selectIndividuals.getIndividuals().get(value));
-            options.remove(maxIndex);
         }
         c.output(selectIndicesTupleTag, KV.of(key, indices));
         c.output(KV.of(key, new Individuals<>(rng.nextLong(), individualList)));
