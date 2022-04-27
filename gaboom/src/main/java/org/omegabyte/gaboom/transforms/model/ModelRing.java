@@ -12,7 +12,6 @@ import org.omegabyte.gaboom.Individuals;
 import org.omegabyte.gaboom.transforms.Crossover;
 import org.omegabyte.gaboom.transforms.Evaluate;
 import org.omegabyte.gaboom.transforms.Mutate;
-import org.omegabyte.gaboom.transforms.Select;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -20,13 +19,11 @@ import java.util.List;
 import java.util.Random;
 
 public class ModelRing<GenomeT extends Serializable> extends ModelTransform<GenomeT> {
-    private final Select.SelectNoIndexTransform<GenomeT> selectTransform;
     private final Crossover.CrossoverTransform<GenomeT> crossoverTransform;
     private final Mutate.MutateTransform<GenomeT> mutateTransform;
     private final Evaluate.EvaluateTransform<GenomeT> evaluateTransform;
 
-    public ModelRing(Select.SelectFn<GenomeT> selectFn, Crossover.CrossoverTransform<GenomeT> crossoverTransform, Mutate.MutateTransform<GenomeT> mutateTransform, Evaluate.FitnessTransform<GenomeT> fitnessTransform) {
-        this.selectTransform = Select.as(selectFn);
+    public ModelRing(Crossover.CrossoverTransform<GenomeT> crossoverTransform, Mutate.MutateTransform<GenomeT> mutateTransform, Evaluate.FitnessTransform<GenomeT> fitnessTransform) {
         this.crossoverTransform = crossoverTransform.withCrossRate(1);
         this.mutateTransform = mutateTransform;
         this.evaluateTransform = Evaluate.as(fitnessTransform);

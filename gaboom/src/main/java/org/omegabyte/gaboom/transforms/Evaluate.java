@@ -1,5 +1,8 @@
 package org.omegabyte.gaboom.transforms;
 
+import org.apache.beam.sdk.coders.KvCoder;
+import org.apache.beam.sdk.coders.SerializableCoder;
+import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.transforms.*;
 import org.apache.beam.sdk.values.*;
 import org.omegabyte.gaboom.BaseItem;
@@ -15,7 +18,7 @@ import java.util.Random;
 
 public class Evaluate {
 
-    public abstract class FitnessTransform<GenomeT extends Serializable> extends PTransform<PCollection<Individual<GenomeT>>, PCollection<Individual<GenomeT>>> {}
+    public static abstract class FitnessTransform<GenomeT extends Serializable> extends PTransform<PCollection<Individual<GenomeT>>, PCollection<Individual<GenomeT>>> {}
 
     public static class EvaluateTransform<GenomeT extends Serializable> extends PTransform<PCollection<KV<String, Individuals<GenomeT>>>, PCollection<KV<String, Individuals<GenomeT>>>> {
         private final FitnessTransform<GenomeT> fitnessTransform;
@@ -72,13 +75,19 @@ public class Evaluate {
                     .apply(ParDo.of(new IndexIndividualFn<>()));
 
             // apply indexes based on input id
-            PCollection<KV<String, Individual<GenomeT>>> evaluated = indexedIndividualPCollection.apply(AssignIndividualTransform.of(result.get(keyAtIdTT)));
+            PCollection<KV<String, String>> keyAtId = result.get(keyAtIdTT)
+                    .setCoder(KvCoder.of(StringUtf8Coder.of(), StringUtf8Coder.of()));
+            PCollection<KV<String, Individual<GenomeT>>> evaluated = indexedIndividualPCollection.apply(AssignIndividualTransform.of(keyAtId));
 
             // combine all inputs into the sorted list and return the updated individuals
-            return PCollectionList.of(evaluated).and(result.get(evaluatedAtKeyTT))
+            PCollection<KV<String, Individual<GenomeT>>> evaluatedAtKey = result.get(evaluatedAtKeyTT)
+                    .setCoder(evaluated.getCoder());
+            PCollection<KV<String, BaseItem>> baseItemAtKey = result.get(baseItemAtKeyTT)
+                    .setCoder(KvCoder.of(StringUtf8Coder.of(), SerializableCoder.of(BaseItem.class)));
+            return PCollectionList.of(evaluated).and(evaluatedAtKey)
                     .apply(Flatten.pCollections())
                     .apply(Combine.perKey(new SortIndividualsFn<>()))
-                    .apply(CreateIndividualsTransform.of(result.get(baseItemAtKeyTT)));
+                    .apply(CreateIndividualsTransform.of(baseItemAtKey));
         }
     }
 
