@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class MutateTest {
 
@@ -64,15 +65,19 @@ public class MutateTest {
 
             assertEquals(individualsList.get(0).getId(), result.getValue().getIndividuals().get(0).getId());
             assertEquals(individualsList.get(0).getGenome() + 1, (int) result.getValue().getIndividuals().get(0).getGenome());
+            assertNull(result.getValue().getIndividuals().get(0).getFitness());
 
             assertEquals(individualsList.get(1).getId(), result.getValue().getIndividuals().get(1).getId());
             assertEquals(individualsList.get(1).getGenome(), result.getValue().getIndividuals().get(1).getGenome());
+            assertEquals(individualsList.get(1).getFitness(), result.getValue().getIndividuals().get(1).getFitness());
 
             assertEquals(individualsList.get(2).getId(), result.getValue().getIndividuals().get(2).getId());
             assertEquals(individualsList.get(2).getGenome(), result.getValue().getIndividuals().get(2).getGenome());
+            assertEquals(individualsList.get(2).getFitness(), result.getValue().getIndividuals().get(2).getFitness());
 
             assertEquals(individualsList.get(3).getId(), result.getValue().getIndividuals().get(3).getId());
             assertEquals(individualsList.get(3).getGenome(), result.getValue().getIndividuals().get(3).getGenome());
+            assertEquals(individualsList.get(3).getFitness(), result.getValue().getIndividuals().get(3).getFitness());
             return null;
         });
         pipeline.run();

@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class CrossoverTest {
 
@@ -84,20 +85,26 @@ public class CrossoverTest {
             assertEquals(-4962768465676381896L, resultMap.get("test1").getSeed());
             assertEquals("7157Kh", resultMap.get("test1").getIndividuals().get(0).getId());
             assertEquals(individuals1.getIndividuals().get(0).getGenome(), resultMap.get("test1").getIndividuals().get(0).getGenome());
+            assertNull(resultMap.get("test1").getIndividuals().get(0).getFitness());
             assertEquals("r8Ry8R", resultMap.get("test1").getIndividuals().get(1).getId());
             assertEquals(individuals1.getIndividuals().get(1).getGenome(), resultMap.get("test1").getIndividuals().get(1).getGenome());
+            assertNull(resultMap.get("test1").getIndividuals().get(1).getFitness());
 
             assertEquals(-4964420948893066024L, resultMap.get("test2").getSeed());
             assertEquals("64iE89", resultMap.get("test2").getIndividuals().get(0).getId());
             assertEquals(individuals2.getIndividuals().get(1).getGenome(), resultMap.get("test2").getIndividuals().get(0).getGenome());
+            assertNull(resultMap.get("test1").getIndividuals().get(0).getFitness());
             assertEquals("xrGe8I", resultMap.get("test2").getIndividuals().get(1).getId());
             assertEquals(individuals2.getIndividuals().get(1).getGenome(), resultMap.get("test2").getIndividuals().get(1).getGenome());
+            assertNull(resultMap.get("test1").getIndividuals().get(1).getFitness());
 
             assertEquals(-4959463499243013640L, resultMap.get("test3").getSeed());
             assertEquals(individuals3.getIndividuals().get(0).getId(), resultMap.get("test3").getIndividuals().get(0).getId());
             assertEquals(individuals3.getIndividuals().get(0).getGenome(), resultMap.get("test3").getIndividuals().get(0).getGenome());
+            assertEquals(individuals3.getIndividuals().get(0).getFitness(), resultMap.get("test3").getIndividuals().get(0).getFitness());
             assertEquals(individuals3.getIndividuals().get(1).getId(), resultMap.get("test3").getIndividuals().get(1).getId());
             assertEquals(individuals3.getIndividuals().get(1).getGenome(), resultMap.get("test3").getIndividuals().get(1).getGenome());
+            assertEquals(individuals3.getIndividuals().get(1).getFitness(), resultMap.get("test3").getIndividuals().get(1).getFitness());
             return null;
         });
         pipeline.run();

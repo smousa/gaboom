@@ -1,5 +1,8 @@
 package org.omegabyte.gaboom.transforms.model;
 
+import org.apache.beam.sdk.coders.KvCoder;
+import org.apache.beam.sdk.coders.SerializableCoder;
+import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.ParDo;
@@ -31,6 +34,10 @@ public class GenerateOffspringsTransform<GenomeT extends Serializable> extends P
         this.selectTransform = Select.as(selectFn);
         this.crossoverTransform = crossoverTransform;
         this.mutateTransform = mutateTransform;
+    }
+
+    public static <GenomeT extends Serializable> GenerateOffspringsTransform<GenomeT> of(Select.SelectFn<GenomeT> selectFn, Crossover.CrossoverTransform<GenomeT> crossoverTransform, Mutate.MutateTransform<GenomeT> mutateTransform) {
+        return new GenerateOffspringsTransform<>(selectFn, crossoverTransform, mutateTransform);
     }
 
     static class SelectParentsFn<GenomeT extends Serializable> extends DoFn<KV<String, SelectIndividuals<GenomeT>>, KV<String, SelectIndividuals<GenomeT>>> {
@@ -70,16 +77,17 @@ public class GenerateOffspringsTransform<GenomeT extends Serializable> extends P
             CoGbkResult result = c.element().getValue();
 
             NBaseItem nBaseItem = result.getOnly(nBaseItemTupleTag);
-            List<Individual<GenomeT>> individuals = new ArrayList<>();
-            result.getAll(individualsTupleTag).forEach(inds -> {
-                individuals.addAll(inds.getIndividuals());
-            });
+            List<Individual<GenomeT>> individualList = new ArrayList<>();
+            result.getAll(individualsTupleTag).forEach(individuals -> individualList.addAll(individuals.getIndividuals()));
 
-            if (individuals.size() < nBaseItem.getN()) {
+            if (individualList.size() < nBaseItem.getN()) {
                 logger.error("Not enough individuals to populate, id={}", key);
                 return;
             }
-            c.output(KV.of(key, new Individuals<>(nBaseItem.getSeed(), individuals.subList(0, nBaseItem.getN()))));
+
+            Individuals<GenomeT> individuals = new Individuals<>(nBaseItem.getSeed());
+            individuals.getIndividuals().addAll(individualList.subList(0, nBaseItem.getN()));
+            c.output(KV.of(key, individuals));
         }
     }
 
@@ -91,6 +99,9 @@ public class GenerateOffspringsTransform<GenomeT extends Serializable> extends P
         PCollectionTuple result = input.apply(ParDo.of(new SelectParentsFn<GenomeT>(nBaseItemAtKeyTT))
                 .withOutputTags(selectPairsAtKeyTT, TupleTagList.of(nBaseItemAtKeyTT)));
 
+        PCollection<KV<String, NBaseItem>> nBaseItemAtKey = result.get(nBaseItemAtKeyTT)
+                .setCoder(KvCoder.of(StringUtf8Coder.of(), SerializableCoder.of(NBaseItem.class)));
+
         // Create offspring
         PCollection<KV<String, Individuals<GenomeT>>> offsprings = result.get(selectPairsAtKeyTT)
                 .apply(selectTransform)
@@ -100,7 +111,7 @@ public class GenerateOffspringsTransform<GenomeT extends Serializable> extends P
         // Combine offspring
         TupleTag<NBaseItem> nBaseItemTT = new TupleTag<>();
         TupleTag<Individuals<GenomeT>> offspringsTT = new TupleTag<>();
-        return KeyedPCollectionTuple.of(nBaseItemTT, result.get(nBaseItemAtKeyTT)).and(offspringsTT, offsprings)
+        return KeyedPCollectionTuple.of(offspringsTT, offsprings).and(nBaseItemTT, nBaseItemAtKey)
                 .apply(CoGroupByKey.create())
                 .apply(ParDo.of(new GenerateOffspringsFn<>(nBaseItemTT, offspringsTT)));
     }

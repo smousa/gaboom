@@ -69,7 +69,7 @@ public class ModelDownToSize<GenomeT extends Serializable> extends ModelTransfor
 
         // Make offsprings from the initial population
         PCollection<KV<String, Individuals<GenomeT>>> offsprings = input.apply(ParDo.of(new IndividualsToSelectorFn<>(numOffsprings)))
-                .apply(new GenerateOffspringsTransform<>(selectFnA, crossoverTransform, mutateTransform));
+                .apply(GenerateOffspringsTransform.of(selectFnA, crossoverTransform, mutateTransform));
 
         // Append offsprings back into the initial population and evaluate
         PCollection<KV<String, Individuals<GenomeT>>> cumulativePopulation = PCollectionList.of(input).and(offsprings)

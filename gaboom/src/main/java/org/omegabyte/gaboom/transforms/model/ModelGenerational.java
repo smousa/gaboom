@@ -24,6 +24,6 @@ public class ModelGenerational<GenomeT extends Serializable> extends ModelTransf
     @Override
     public PCollection<KV<String, Individuals<GenomeT>>> expand(PCollection<KV<String, Individuals<GenomeT>>> input) {
         return input.apply(ParDo.of(new IndividualsToSelectorFn<>()))
-                .apply(new GenerateOffspringsTransform<>(selectFn, crossoverTransform, mutateTransform));
+                .apply(GenerateOffspringsTransform.of(selectFn, crossoverTransform, mutateTransform));
     }
 }
