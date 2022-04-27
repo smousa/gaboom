@@ -3,7 +3,6 @@ package org.omegabyte.gaboom.transforms;
 import org.apache.beam.sdk.testing.PAssert;
 import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.transforms.Create;
-import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.SerializableFunction;
 import org.apache.beam.sdk.transforms.View;
 import org.apache.beam.sdk.values.KV;
@@ -13,14 +12,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.omegabyte.gaboom.Individual;
 import org.omegabyte.gaboom.Individuals;
-import sun.security.krb5.internal.PAData;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class MutateTest {
 

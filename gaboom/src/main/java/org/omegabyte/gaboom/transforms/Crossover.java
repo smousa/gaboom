@@ -57,11 +57,11 @@ public class Crossover {
             this.sideInputs = sideInputs;
         }
 
-        public CrossoverTransform withSideInputs(PCollectionView... sideInputs) {
+        public CrossoverTransform<GenomeT> withSideInputs(PCollectionView... sideInputs) {
             return this.withSideInputs((Iterable) Arrays.asList(sideInputs));
         }
 
-        public CrossoverTransform withSideInputs(Iterable<? extends PCollectionView<?>> sideInputs) {
+        public CrossoverTransform<GenomeT> withSideInputs(Iterable<? extends PCollectionView<?>> sideInputs) {
             List list = ImmutableList.builder().addAll(this.sideInputs).addAll(sideInputs).build();
             return new CrossoverTransform<>(fn, list);
         }
